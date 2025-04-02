@@ -62,7 +62,7 @@ for (int i = 0; i < 5; i++) {
     currentReadings[i] = analogRead(CURRENT_PINS[i]);
 }
 
-ControlMotor(filteredSignal, currentReadings);
+ControlMotors(filteredSignal, currentReadings);
 
 ```
 
