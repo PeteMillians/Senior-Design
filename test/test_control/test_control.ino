@@ -59,15 +59,15 @@ void ControlMotors(float filteredSignal, int sensorReadings[]) {
         
         // Set to hold state
         Serial.print("Hold state. Angle = ");
-        Serial.println(map(currentAngles[i], 0, 1023, 0, 360));
-        MOTORS[i].write(map(currentAngles[i], 0, 1023, 0, 360));
+        Serial.println(map(currentAngles[i], 0, 1023, 0, 180));
+        MOTORS[i].write(map(currentAngles[i], 0, 1023, 0, 180));
       }
 
       else {
         // Set to turn state
         Serial.print("Turn state. Angle = ");
-        Serial.println(map((currentAngles[i] + filteredSignal), 0, 1023, 0, 360));
-        MOTORS[i].write(map((currentAngles[i] + filteredSignal), 0, 1023, 0, 360));
+        Serial.println(map((currentAngles[i] + filteredSignal), 0, 1023, 0, 180));
+        MOTORS[i].write(map((currentAngles[i] + filteredSignal), 0, 1023, 0, 180));
       }
     }
   }
