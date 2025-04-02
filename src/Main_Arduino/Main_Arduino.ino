@@ -36,18 +36,16 @@ void setup() {
 void loop() {
 
     // Read raw data from MyoWare EMG Sensor
-    int rawSignal = ReadInput(EMG_PIN);
-    rawSignal = (rawSignal / 1023.0) * 5.0; 	// Convert to Volts
+    float rawSignal = ReadInput(EMG_PIN);
 
     // Filter raw signal
     float filteredSignal = Filter(rawSignal);
 
-    int sensorReadings[5];
+    float sensorReadings[5];
 
     for (int i = 0; i < 5; i++) {
         // Read current sensor pins 
-        sensorReadings[i] = ReadInput(CURRENT_PINS[i]);
-	sensorReadings[i] = (((sensorReadings[i] / 1023.0) * 5.0) - sensorVoltageOffset) / sensorSensitivity;	// Convert to Amperes
+        sensorReadings[i] = (ReadInput(CURRENT_PINS[i]) - sensorVoltageOffset) / sensorSensitivity; // Convert from Voltage to Amperes
     }
 
     // Control motors using filtered signal and current sensor readings
@@ -57,7 +55,7 @@ void loop() {
 
 }
 
-int ReadInput(int pinNumber) {
+float ReadInput(int pinNumber) {
     /* 
     - Function:
         - Calls the private ***_TryReadInput*** method 
@@ -74,7 +72,7 @@ int ReadInput(int pinNumber) {
         return 0.0;
     }
 
-    return int(input.data);
+    return input.data;
 }
 
 Pair _TryReadInput(int pinNumber) {
@@ -90,10 +88,10 @@ Pair _TryReadInput(int pinNumber) {
    
     Pair input;
 
-    int value = analogRead(pinNumber);
+    float value = (analogRead(pinNumber) / 1023.0) * 5.0; // Input value in Volts
 
     input.success = true;  
-    input.data = float(value);
+    input.data = value;
 
     return input;
 }
@@ -145,7 +143,7 @@ Pair _TryFilter(float data) {
 
 }
 
-void ControlMotors(float filteredSignal, int sensorReadings[]) {
+void ControlMotors(float filteredSignal, float sensorReadings[]) {
     /*
     - Function:
         - Full control algorithm for motors
@@ -168,7 +166,7 @@ void ControlMotors(float filteredSignal, int sensorReadings[]) {
             else {
                 // Set to turn state
                 float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
-		    				    		     // ^ This is an arbitrary value for now (max contraction voltage)
+		    				    		                            // ^ This is an arbitrary value for now (max contraction voltage)
                 MOTORS[i].write(rotation);    
             }
         }
