@@ -22,7 +22,7 @@ void loop() {
 
   int filteredSignal = rand() % 1024;   // Random number between 0 and 1023
 
-  Serial.print("Filter Signal = ");
+  Serial.print("Filtered Signal = ");
   Serial.println(filteredSignal);
 
   int currentReadings[5];
@@ -59,15 +59,15 @@ void ControlMotors(float filteredSignal, int sensorReadings[]) {
         
         // Set to hold state
         Serial.print("Hold state. Angle = ");
-        Serial.println(currentAngles[i]);
-        MOTORS[i].write(currentAngles[i]);
+        Serial.println(map(currentAngles[i], 0, 1023, 0, 360));
+        MOTORS[i].write(map(currentAngles[i], 0, 1023, 0, 360));
       }
 
       else {
         // Set to turn state
         Serial.print("Turn state. Angle = ");
-        Serial.println(currentAngles[i] + filteredSignal);
-        MOTORS[i].write(currentAngles[i] + filteredSignal);
+        Serial.println(map((currentAngles[i] + filteredSignal), 0, 1023, 0, 360));
+        MOTORS[i].write(map((currentAngles[i] + filteredSignal), 0, 1023, 0, 360));
       }
     }
   }
