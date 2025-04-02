@@ -111,7 +111,7 @@ void loop() {
 
 }
 
-void ControlMotors(float filteredSignal, int sensorReadings[]) {
+void ControlMotors(float filteredSignal, float sensorReadings[]) {
     /*
     - Function:
         - Full control algorithm for motors
@@ -133,7 +133,7 @@ void ControlMotors(float filteredSignal, int sensorReadings[]) {
 
             else {
                 // Set to turn state
-                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 1023, 90, 180);    // Map signal to a rotation speed
+                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
                 MOTORS[i].write(rotation);    
             }
         }

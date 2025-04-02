@@ -94,7 +94,7 @@ void loop() {
     .
     .
 
-    int rawSignal = ReadInput(EMG_PIN);
+    float rawSignal = ReadInput(EMG_PIN);
 
     /* Filter signal */
 
@@ -103,7 +103,7 @@ void loop() {
     delay (100);    // 100 ms delay
 }
 
-int ReadInput(int pinNumber) {
+float ReadInput(int pinNumber) {
     /* 
     - Function:
         - Calls the private ***_TryReadInput*** method 
@@ -136,10 +136,10 @@ Pair _TryReadInput(int pinNumber) {
    
     Pair input;
 
-    int value = analogRead(pinNumber);
+    float value = (analogRead(pinNumber) / 1023.0) * 5.0; // Input value in Volts
 
     input.success = true;  
-    input.data = float(value);
+    input.data = value;
 
     return input;
 }
