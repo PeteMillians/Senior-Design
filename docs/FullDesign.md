@@ -65,6 +65,88 @@ The following outlines the full design of the EMG-Data Acquisition System
 - [Digital Filter](FilterDesign.md)
 - [Control Algorithm](ControlAlgorithmDesign.md)
 
+## Algorithm
+
+```c++
+
+const int EMG_PIN = A0;
+
+struct Pair {
+    bool success;
+    float data;
+};
+
+void setup() {
+
+    .
+    .
+    .
+
+}
+
+.
+.
+.
+
+void loop() {
+
+    .
+    .
+    .
+
+    int rawSignal = ReadInput(EMG_PIN);
+
+    /* Filter signal */
+
+    /* Control Algorithm */
+    
+    delay (100);    // 100 ms delay
+}
+
+int ReadInput(int pinNumber) {
+    /* 
+    - Function:
+        - Calls the private ***_TryReadInput*** method 
+        - Only returns a value if ***_TryReadInput*** was successful
+    - Arguments:
+        - pinNumber (int): the specific input pin that is read from
+    - Returns:
+        - int: digital value from pin
+    */
+
+    Pair input = _TryReadInput(pinNumber);
+    if (!input.success) {
+        Serial.println("Error reading input");
+        return 0.0;
+    }
+
+    return int(input.data);
+}
+
+Pair _TryReadInput(int pinNumber) {
+    /* 
+    - Function:
+        - Reads the analog input value at a specified pin
+    - Arguments:
+        - pinNumber(int): the specific pin that is read from
+    - Returns:
+        - bool: whether or not the read was sucessful
+        - float: the value read from the pin as a float
+    */
+   
+    Pair input;
+
+    int value = analogRead(pinNumber);
+
+    input.success = true;  
+    input.data = float(value);
+
+    return input;
+}
+    
+
+```
+
 ```mermaid
 graph TD
   subgraph Full Design
