@@ -133,7 +133,7 @@ void ControlMotors(float filteredSignal, int sensorReadings[]) {
 
             else {
                 // Set to turn state
-                float rotation = map(filterSignal, SIGNAL_THRESHOLD, 1023, 90, 180);    // Map signal to a rotation speed
+                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 1023, 90, 180);    // Map signal to a rotation speed
                 MOTORS[i].write(rotation);    
             }
         }
