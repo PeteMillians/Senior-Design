@@ -23,6 +23,22 @@ The following outlines the design of the Digital Filter inside the Arduino R3
   - Returns:
     - Returns a boolean indicating if filtering was successful, and the filtered value.
 
+## Testing
+
+To test the filter algorithm, we will copy the algorithm shown below, fill in the setup function properly, and use a c++ random number generator to test the filtering. We will use the ```Serial.print()``` method to print the random number, and then reuse the method to print the output of the filter given that value. The ```loop()``` will look something like this:
+
+```c++
+	float signal = rand() % 1024;	// Random number between 0 and 1023
+	float filteredSignal = Filter(signal);	// Filter the signal
+
+	Serial.print('Random Signal = ');
+	Serial.println(signal);
+	Serial.print('Filtered Signal = ');
+	Serial.println(filteredSignal);
+	Serial.println('');
+
+```
+
 ## Future Improvements
 
 For future improvements to the Digital Filter, a convolutional filter could be implemented. This would allow us to use values at different power levels while still attenuating noise.
