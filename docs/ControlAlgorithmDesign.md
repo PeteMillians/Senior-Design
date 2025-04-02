@@ -66,6 +66,10 @@ ControlMotors(filteredSignal, currentReadings);
 
 ```
 
+## Future Improvements
+
+We should have purchest continous rotation servo motors, allowing us to wind, hold, and unwind the servo.
+
 ## Algorithm
 
 ```c++
