@@ -35,50 +35,50 @@ void loop() {
     
   }
   
-void ControlMotors(float filteredSignal, int sensorReadings[]) {
-  /*
-  - Function:
-      - Full control algorithm for motors
-  - Arguments:
-      - filteredSignal (float): Filtered EMG data
-      - sensorReadings (ints): Current sensor readings
-  */
+  void ControlMotors(float filteredSignal, int sensorReadings[]) {
+    /*
+    - Function:
+        - Full control algorithm for motors
+    - Arguments:
+        - filteredSignal (float): Filtered EMG data
+        - sensorReadings (ints): Current sensor readings
+    */
 
-  int currentAngles[5];
+    // Check that the EMG signal is powering the motors
+    if (filteredSignal > SIGNAL_THRESHOLD) {
 
-  // Check that the EMG signal is powering the motors
-  if (filteredSignal > SIGNAL_THRESHOLD) {
+        // Iterate through each current sensor pin
+        for (int i = 0; i < 5; i++) {
 
-    // Iterate through each current sensor pin
-    for (int i = 0; i < 5; i++) {
+            if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
+                // Set to hold state
+                Serial.print("Motor ");
+                Serial.print(i + 1);
+                Serial.println(" in hold state.");
+                MOTORS[i].write(90);
+            }
 
-      // Retrieve current angle of motors
-      currentAngles[i] = MOTORS[i].read();
-
-      if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
-        
-        // Set to hold state
-        Serial.print("Hold state. Angle = ");
-        Serial.println(map(currentAngles[i], 0, 1023, 0, 180));
-        MOTORS[i].write(map(currentAngles[i], 0, 1023, 0, 180));
-      }
-
-      else {
-        // Set to turn state
-        Serial.print("Turn state. Angle = ");
-        Serial.println(map((currentAngles[i] + filteredSignal), 0, 1023, 0, 180));
-        MOTORS[i].write(map((currentAngles[i] + filteredSignal), 0, 1023, 0, 180));
-      }
+            else {
+                float rotation = map(filterSignal, SIGNAL_THRESHOLD, 1023, 90, 180);
+                // Set to turn state
+                Serial.print("Motor ");
+                Serial.print(i + 1);
+                Serial.print(" in turn State. Rotation = ");
+                Serial.println(rotation);
+                MOTORS[i].write(rotation);    // Map signal to a rotation speed
+            }
+        }
     }
-  }
-  else {
-    Serial.println("No muscle contraction");
+    else {
+        // Iterate through each current sensor pin
+        for (int i = 0; i < 5; i++) {
 
-    // Iterate through each current sensor pin
-    for (int i = 0; i < 5; i++) { 
-      // Set to release state
-      MOTORS[i].write(0);
-    
+            // Set to release state
+            Serial.print("Motor ");
+            Serial.print(i + 1);
+            Serial.println(" in release state.");
+            MOTORS[i].write(0);
+        }
     }
-  }
+
 }

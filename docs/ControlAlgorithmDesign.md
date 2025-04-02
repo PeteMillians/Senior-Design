@@ -66,10 +66,6 @@ ControlMotors(filteredSignal, currentReadings);
 
 ```
 
-## Future Improvements
-
-We should have purchest continous rotation servo motors, allowing us to wind, hold, and unwind the servo.
-
 ## Algorithm
 
 ```c++
@@ -116,15 +112,13 @@ void loop() {
 }
 
 void ControlMotors(float filteredSignal, int sensorReadings[]) {
-    '''
+    /*
     - Function:
         - Full control algorithm for motors
     - Arguments:
         - filteredSignal (float): Filtered EMG data
         - sensorReadings (ints): Current sensor readings
-    '''
-
-    int currentAngles[5];
+    */
 
     // Check that the EMG signal is powering the motors
     if (filteredSignal > SIGNAL_THRESHOLD) {
@@ -132,38 +126,24 @@ void ControlMotors(float filteredSignal, int sensorReadings[]) {
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
 
-            // Retrieve current angle of motors
-            currentAngles[i] = MOTORS[i].read()
-
             if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
-                
                 // Set to hold state
-                MOTORS[i].write(currentAngles[i]);
+                MOTORS[i].write(90);
             }
 
             else {
                 // Set to turn state
-                MOTORS[i].write(currentAngles[i] + filteredSignal);
+                float rotation = map(filterSignal, SIGNAL_THRESHOLD, 1023, 90, 180);    // Map signal to a rotation speed
+                MOTORS[i].write(rotation);    
             }
         }
     }
     else {
-
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
 
-            if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
-                
-                // Set to release state
-                MOTORS[i].write(0);
-                /* 
-                POTENTIAL IDEA:
-                    - Detach motor here to allow it to release
-                    - in Loop(), check if a motor is detached and attach it if so
-                        - Should we wait some time?
-                        - Do we even need it in setup()?
-                */
-            }
+            // Set to release state
+            MOTORS[i].write(0);
         }
     }
 
