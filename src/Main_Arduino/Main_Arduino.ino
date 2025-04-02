@@ -12,7 +12,7 @@ const Servo MOTORS[5];
 
 /* Thresholds */
 const int CURRENT_THRESHOLD = 2;   // Example current threshold level in Amps
-const int SIGNAL_THRESHOLD = 0.03;   // Example voltage threshold level in Volts
+const float SIGNAL_THRESHOLD = 0.03;   // Example voltage threshold level in Volts
 
 /* Conversions */
 const float sensorVoltageOffset = 2.5;  // For ACS712, it has a 2.5V offset for 0A current
@@ -21,38 +21,43 @@ const float sensorSensitivity = 0.066;  // ACS712 30A model (0.066V per Ampere)
 // Pair declaration
 struct Pair{
     bool success;
-    int data;
+    float data;
 };
 
 void setup() {
     Serial.begin(9600);  // Start serial communication
 
     // Iterate through each motor
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++) 
         MOTORS[i].attach(MOTOR_PINS[i]); // Attach motors to their output pins
-    }
+    
 }
 
 void loop() {
+    float rawSignal = ReadInput(EMG_PIN);   // Read raw data from MyoWare EMG Sensor
+    Serial.print("Raw Signal = ");
+    Serial.print(rawSignal);
+    Serial.println(" V");
 
-    // Read raw data from MyoWare EMG Sensor
-    float rawSignal = ReadInput(EMG_PIN);
-
-    // Filter raw signal
-    float filteredSignal = Filter(rawSignal);
+    float filteredSignal = Filter(rawSignal);   // Filter raw signal
+    Serial.print("Filtered Signal = ");
+    Serial.print(filteredSignal);
+    Serial.println(" V");
 
     float sensorReadings[5];
 
-    for (int i = 0; i < 5; i++) {
-        // Read current sensor pins 
-        sensorReadings[i] = (ReadInput(CURRENT_PINS[i]) - sensorVoltageOffset) / sensorSensitivity; // Convert from Voltage to Amperes
+    for (int i = 0; i < 5; i++)  {
+        sensorReadings[i] = (ReadInput(CURRENT_PINS[i]) - sensorVoltageOffset) / sensorSensitivity; // Read current sensor pins in Amperes
+        Serial.print("Sensor Reading for");
+        Serial.print(i + 1);
+        Serial.print(" = ");
+        Serial.print(sensorReadings[i]);
+        Serial.println(" A");
     }
 
-    // Control motors using filtered signal and current sensor readings
-    ControlMotors(filteredSignal, sensorReadings);
+    ControlMotors(filteredSignal, sensorReadings);  // Control motors using filtered signal and current sensor readings
 
-    delay(100);     // Delay 100 ms
-
+    delay(100); // Delay 100 ms
 }
 
 float ReadInput(int pinNumber) {
@@ -160,11 +165,17 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
 
             if (abs(sensorReadings[i]) > CURRENT_THRESHOLD) {    // If overdrawing current
                 // Set to hold state
+                Serial.print("Motor ");
+                Serial.print(i + 1);
+                Serial.println(" in hold state.")
                 MOTORS[i].write(90);
             }
 
             else {
                 // Set to turn state
+                Serial.print("Motor ");
+                Serial.print(i + 1);
+                Serial.println(" in turn state.")
                 float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
 		    				    		                            // ^ This is an arbitrary value for now (max contraction voltage)
                 MOTORS[i].write(rotation);    
@@ -176,6 +187,9 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         for (int i = 0; i < 5; i++) {
 
             // Set to release state
+            Serial.print("Motor ");
+            Serial.print(i + 1);
+            Serial.println(" in release state.")
             MOTORS[i].write(0);
         }
     }
