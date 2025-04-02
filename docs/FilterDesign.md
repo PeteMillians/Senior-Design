@@ -1,59 +1,120 @@
-## Digital Filter Design
+# Digital Filter Design
 The following outlines the design of the Digital Filter inside the Arduino R3
 
-### Public Methods
-- **`main()`**
-  - Runs the main loop, continually reading inputs, applying the digital filter, and outputting the control signal.
+## Requirements
+1. Filter must pass voltages above a certain threshold, and attenuate voltages below a certain threshold
 
-- **`ReadInput(int pinNumber) -> int`**
-  - Public method for reading a specific input pin. Calls the private method to ensure safe operation.
-  - Handles errors gracefully by calling the private method.
+## Public Methods
+- ***float Filter(int data)***
+  - Function:
+    - Public method for filtering the digital data. Calls the private filtering method.
+    - Ensures that the data is properly filtered, even if errors occur.
+  - Arguments:
+    - data (int): the digital data passed which needs to be filtered
+  - Returns:
+    - float value of filtered data
 
-- **`Filter(int data) -> int`**
-  - Public method for filtering the digital data. Calls the private filtering method.
-  - Ensures that the data is properly filtered, even if errors occur.
+## Private Methods
+- ***Pair _TryFilter(int data)***
+  - Function:
+    - Attempts to filter the given data using a specific voltage threshold.
+  - Arguments:
+    - data (int): The raw EMG data 
+  - Returns:
+    - Returns a boolean indicating if filtering was successful, and the filtered value.
 
-- **`ReturnOutput(int data, int pinNumber)`**
-  - Public method for returning the output digital control signal to the specified pin.
-  - Ensures safe handling of the output by calling the private method.
+## Future Improvements
 
-### Private Methods
-- **`_TryReadInput(int pinNumber) -> [Bool, int]`**
-  - Attempts to read the analog value from a specified input pin.
-  - Returns a value from 0 to 1023 (or similar, based on ADC range), and a boolean representing the success or failure of the read operation.
-  - Will use **A0** for the EMG input from the **MyoWare EMG sensor** and **A1-A5** for current sensor readings.
-  - **Error Handling**: If read fails, return `false` and implement retries or fallbacks (e.g., default to previous values).
+For future improvements to the Digital Filter, a convolutional filter could be implemented. This would allow us to use values at different power levels while still attenuating noise.
 
-- **`_TryFilter(int data) -> [Bool, int]`**
-  - Attempts to filter the given data using a specific voltage threshold.
-  - Returns a boolean indicating if filtering was successful, and the filtered value.
-  - This method will call the `_TryConvolve()` method for convolution-based filtering.
-  - **Error Handling**: If filtering fails (e.g., invalid data), return `false` and prevent system failure.
+A convolutional filter requires an array of input signals to convolve upon, given that the signal is not continuous. This would require a queue of data, inherently slowing down function of the hand. Depending on the size of the queue (which impacts the quality of the filter), an input signal can take more time to be processed into the Control Algorithm. For our purposes, we wanted fast control of the fingers, but an implementation of a complex filter could allow more accurate movements.
 
-- **`_TryConvolve(int data) -> [Bool, int]`**
-  - Applies a convolution filter to the data to process the signal.
-  - Returns `true` if successful, along with the processed signal value.
-  - **Potential Filter Types**: Low-pass, moving average, or custom filters based on application needs.
-  - **Error Handling**: If the convolution fails, return `false` and log error or retry.
+## Algorithm
+```c++
+/* Constants declared in header */
+const int SIGNAL_THRESHOLD = 500;   # Example voltage threshold level in range (0 : 1023)
 
-- **`_TryReturnOutput(int data, int pinNumber) -> Bool`**
-  - Tries to output the filtered data to the specified pin, translating it into a usable control signal.
-  - Returns `true` if output is successful, otherwise `false`.
-  - **Error Handling**: If output fails, attempt to reset or retry. Ensure control signal integrity.
+struct Pair {
+	bool success;
+	float data;
+};
 
-- **`_DigitalToControl(int data) -> int`**
-  - Converts the filtered digital signal into a control signal with one of three actions:
-    1. **Turn**
-    2. **Hold**
-    3. **Release**
-  - Determines voltage bins based on predefined calibration settings. 
-  - **Calibration**: The control signal is calibrated during testing, and voltage bins are determined to match specific motor actions (e.g., motor speed or position).
-  - Calibration is a critical step to ensure correct behavior and should be tested with real hardware.
+.
+.
+.
 
----
+void setup() {
 
-## Error Handling
-Each of the `_Try` methods returns a **boolean status** to indicate success or failure. When a failure occurs, the system should attempt to recover (e.g., retry the read, apply a fallback value) and log the failure through **Serial Monitor** for debugging.
+    .
+    .
+    .
 
-- For example, if `_TryReadInput()` fails, the system can retry a few times, or use a **default value** for safety, while notifying the user.
-- Similarly, `_TryFilter()` and `_TryReturnOutput()` should ensure that motor control signals are either corrected or halted in case of failure.
+}
+
+.
+.
+.
+
+void loop() {
+
+    .
+    .
+    .
+
+    /* Read EMG signal */
+	float filteredSignal = Filter(rawSignal);
+
+
+	.
+	.
+	.
+  
+}
+
+float Filter(int data) {
+	'''
+	- Function:
+		- Public method for filtering the digital data. Calls the private filtering method.
+		- Ensures that the data is properly filtered, even if errors occur.
+	- Arguments:
+		- data (int): the digital data passed which needs to be filtered
+	- Returns:
+		- float value of filtered data
+	'''
+
+	Pair filterPair = _TryFilter(data);
+
+	if (!filterPair.success) {
+		Serial.println('Filter Failure')
+		return 0.0;
+	}
+	
+	return filterPair.data;
+
+}
+
+Pair _TryFilter(int data) {
+	'''
+	- Function:
+		- Attempts to filter the given data using a specific voltage threshold.
+	- Arguments:
+		- data (int): The raw EMG data 
+	- Returns:
+		- Returns a boolean indicating if filtering was successful, and the filtered value.
+	'''
+
+	Pair tryFilter;
+	
+	if(data < SIGNAL_THRESHOLD) {
+		tryFilter.data = 0.0;
+		tryFilter.success = true;
+	}
+	else {
+		tryFilter.data = data;
+		tryFilter.success = true;
+	}
+
+	return tryFilter;
+
+}
+```
