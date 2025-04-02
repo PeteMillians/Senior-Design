@@ -59,7 +59,7 @@ int filteredSignal = rand() % 1024;   // Random number between 0 and 1023
 int currentReadings[5];
 
 for (int i = 0; i < 5; i++) {
-    currentReadings[i] = ReadInput(CURRENT_PINS[i]);
+    currentReadings[i] = analogRead(CURRENT_PINS[i]);
 }
 
 ControlMotor(filteredSignal, currentReadings);
