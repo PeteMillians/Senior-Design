@@ -68,7 +68,7 @@ float ReadInput(int pinNumber) {
     - Arguments:
         - pinNumber (int): the specific input pin that is read from
     - Returns:
-        - int: digital value from pin
+        - float: digital value from pin
     */
 
     Pair input = _TryReadInput(pinNumber);

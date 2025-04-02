@@ -3,8 +3,8 @@
 /* Constants declared in header */
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {3, 5, 6, 9, 10};
-const int CURRENT_THRESHOLD = 500;   // Example current threshold level in range (0 : 1023)
-const int SIGNAL_THRESHOLD = 500;   // Example voltage threshold level in range (0 : 1023)
+const int CURRENT_THRESHOLD = 2;   // Example current threshold level in range (0 : 1023)
+const int SIGNAL_THRESHOLD = 0.03;   // Example voltage threshold level in range (0 : 1023)
 const Servo MOTORS[5];
 
 void setup() {
@@ -28,20 +28,20 @@ void loop() {
   int currentReadings[5];
   
   for (int i = 0; i < 5; i++) {
-      currentReadings[i] = analogRead(CURRENT_PINS[i]);
+      currentReadings[i] = float(analogRead(CURRENT_PINS[i]));
     }
     
     ControlMotors(filteredSignal, currentReadings);
     
   }
   
-  void ControlMotors(float filteredSignal, int sensorReadings[]) {
+  void ControlMotors(float filteredSignal, float sensorReadings[]) {
     /*
     - Function:
         - Full control algorithm for motors
     - Arguments:
         - filteredSignal (float): Filtered EMG data
-        - sensorReadings (ints): Current sensor readings
+        - sensorReadings (floats): Current sensor readings
     */
 
     // Check that the EMG signal is powering the motors
@@ -50,7 +50,7 @@ void loop() {
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
 
-            if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
+            if (abs(sensorReadings[i]) > CURRENT_THRESHOLD) {    // If overdrawing current
                 // Set to hold state
                 Serial.print("Motor ");
                 Serial.print(i + 1);
@@ -59,7 +59,7 @@ void loop() {
             }
 
             else {
-                float rotation = map(filterSignal, SIGNAL_THRESHOLD, 1023, 90, 180);
+                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);
                 // Set to turn state
                 Serial.print("Motor ");
                 Serial.print(i + 1);
