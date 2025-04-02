@@ -152,6 +152,13 @@ void ControlMotors(float filteredSignal, int sensorReadings[]) {
                 
                 // Set to release state
                 MOTORS[i].write(0);
+                /* 
+                POTENTIAL IDEA:
+                    - Detach motor here to allow it to release
+                    - in Loop(), check if a motor is detached and attach it if so
+                        - Should we wait some time?
+                        - Do we even need it in setup()?
+                */
             }
         }
     }
