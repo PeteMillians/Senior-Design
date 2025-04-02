@@ -41,12 +41,12 @@ myServo.write(0)
 ```
 
 ## Public Methods
-***void ControlMotors(float filteredSignal, int sensorReadings[])***
-- Function:
-    - Full control algorithm for motors
-- Arguments:
-    - filteredSignal (float): Filtered EMG data
-    - sensorReadings (ints): Current sensor readings
+- ***void ControlMotors(float filteredSignal, int sensorReadings[])***
+    - Function:
+        - Full control algorithm for motors
+    - Arguments:
+        - filteredSignal (float): Filtered EMG data
+        - sensorReadings (ints): Current sensor readings
 
 ## Algorithm
 
