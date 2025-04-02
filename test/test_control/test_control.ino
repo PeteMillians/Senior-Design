@@ -3,8 +3,8 @@
 /* Constants declared in header */
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {9, 10, 11, 12, 13};
-const int CURRENT_THRESHOLD = 500;   # Example current threshold level in range (0 : 1023)
-const int SIGNAL_THRESHOLD = 500;   # Example voltage threshold level in range (0 : 1023)
+const int CURRENT_THRESHOLD = 500;   // Example current threshold level in range (0 : 1023)
+const int SIGNAL_THRESHOLD = 500;   // Example voltage threshold level in range (0 : 1023)
 const Servo MOTORS[5];
 
 void setup() {
@@ -23,15 +23,15 @@ void loop() {
   int filteredSignal = rand() % 1024;   // Random number between 0 and 1023
 
   int currentReadings[5];
-
+  
   for (int i = 0; i < 5; i++) {
       currentReadings[i] = analogRead(CURRENT_PINS[i]);
+    }
+    
+    ControlMotors(filteredSignal, currentReadings);
+    
   }
-
-  ControlMotor(filteredSignal, currentReadings);
-
-}
-
+  
 void ControlMotors(float filteredSignal, int sensorReadings[]) {
   /*
   - Function:
@@ -50,7 +50,7 @@ void ControlMotors(float filteredSignal, int sensorReadings[]) {
     for (int i = 0; i < 5; i++) {
 
       // Retrieve current angle of motors
-      currentAngles[i] = MOTORS[i].read()
+      currentAngles[i] = MOTORS[i].read();
 
       if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
         
@@ -76,5 +76,4 @@ void ControlMotors(float filteredSignal, int sensorReadings[]) {
       }
     }
   }
-
 }
