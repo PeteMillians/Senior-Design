@@ -48,6 +48,24 @@ myServo.write(0)
         - filteredSignal (float): Filtered EMG data
         - sensorReadings (ints): Current sensor readings
 
+## Testing
+
+To test the Control Motor algorithm, we will copy the algorithm show below, fill in the setup function proprerly, and use a random number generator to simulate an input signal for the EMG signal. We will use the ```Serial.print()``` method to print the random signal so we can ensure the motor is acting as intended. We will add print statements in the ```ControlMotor()``` method to print the state and the angle being written to ensure the function acts properly. We will also use print statements to log the current sensor readings to ensure the current levels fall below threshold (which also allows us to calibrate the threshold level). Throughout testing, we will sporadically use our hands to manually stop the motor, forcing overcurrent. We will ensure the proper current senses overdraw and turns to the hold state. The ```loop``` method will look something like this:
+
+```c++
+
+int filteredSignal = rand() % 1024;   // Random number between 0 and 1023
+
+int currentReadings[5];
+
+for (int i = 0; i < 5; i++) {
+    currentReadings[i] = ReadInput(CURRENT_PINS[i]);
+}
+
+ControlMotor(filteredSignal, currentReadings);
+
+```
+
 ## Algorithm
 
 ```c++
