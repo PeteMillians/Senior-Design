@@ -31,11 +31,11 @@ To test the filter algorithm, we will copy the algorithm shown below, fill in th
 	float signal = rand() % 1024;	// Random number between 0 and 1023
 	float filteredSignal = Filter(signal);	// Filter the signal
 
-	Serial.print('Random Signal = ');
+	Serial.print("Random Signal = ");
 	Serial.println(signal);
-	Serial.print('Filtered Signal = ');
+	Serial.print("Filtered Signal = ");
 	Serial.println(filteredSignal);
-	Serial.println('');
+	Serial.println();
 
 ```
 
@@ -48,7 +48,7 @@ A convolutional filter requires an array of input signals to convolve upon, give
 ## Algorithm
 ```c++
 /* Constants declared in header */
-const int SIGNAL_THRESHOLD = 500;   # Example voltage threshold level in range (0 : 1023)
+const int SIGNAL_THRESHOLD = 500;   // Example voltage threshold level in range (0 : 1023)
 
 struct Pair {
 	bool success;
@@ -88,7 +88,7 @@ void loop() {
 }
 
 float Filter(int data) {
-	'''
+	/*
 	- Function:
 		- Public method for filtering the digital data. Calls the private filtering method.
 		- Ensures that the data is properly filtered, even if errors occur.
@@ -96,7 +96,7 @@ float Filter(int data) {
 		- data (int): the digital data passed which needs to be filtered
 	- Returns:
 		- float value of filtered data
-	'''
+	*/
 
 	Pair filterPair = _TryFilter(data);
 
@@ -110,14 +110,14 @@ float Filter(int data) {
 }
 
 Pair _TryFilter(int data) {
-	'''
+	/*
 	- Function:
 		- Attempts to filter the given data using a specific voltage threshold.
 	- Arguments:
 		- data (int): The raw EMG data 
 	- Returns:
 		- Returns a boolean indicating if filtering was successful, and the filtered value.
-	'''
+	*/
 
 	Pair tryFilter;
 	
