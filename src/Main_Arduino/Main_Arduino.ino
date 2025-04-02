@@ -11,8 +11,12 @@ const int MOTOR_PINS[5] = {9, 10, 11, 12, 13};
 const Servo MOTORS[5];
 
 /* Thresholds */
-const int CURRENT_THRESHOLD = 500;   // Example current threshold level in range (0 : 1023)
-const int SIGNAL_THRESHOLD = 500;   // Example voltage threshold level in range (0 : 1023)
+const int CURRENT_THRESHOLD = 2;   // Example current threshold level in Amps
+const int SIGNAL_THRESHOLD = 0.03;   // Example voltage threshold level in Volts
+
+/* Conversions */
+const float sensorVoltageOffset = 2.5;  // For ACS712, it has a 2.5V offset for 0A current
+const float sensorSensitivity = 0.066;  // ACS712 30A model (0.066V per Ampere)
 
 // Pair declaration
 struct Pair{
@@ -33,6 +37,7 @@ void loop() {
 
     // Read raw data from MyoWare EMG Sensor
     int rawSignal = ReadInput(EMG_PIN);
+    rawSignal = (rawSignal / 1023.0) * 5.0; 	// Convert to Volts
 
     // Filter raw signal
     float filteredSignal = Filter(rawSignal);
@@ -42,6 +47,7 @@ void loop() {
     for (int i = 0; i < 5; i++) {
         // Read current sensor pins 
         sensorReadings[i] = ReadInput(CURRENT_PINS[i]);
+	sensorReadings[i] = (((sensorReadings[i] / 1023.0) * 5.0) - sensorVoltageOffset) / sensorSensitivity;	// Convert to Amperes
     }
 
     // Control motors using filtered signal and current sensor readings
@@ -92,7 +98,7 @@ Pair _TryReadInput(int pinNumber) {
     return input;
 }
 
-float Filter(int data) {
+float Filter(float data) {
 	/*
 	- Function:
 		- Public method for filtering the digital data. Calls the private filtering method.
@@ -114,7 +120,7 @@ float Filter(int data) {
 
 }
 
-Pair _TryFilter(int data) {
+Pair _TryFilter(float data) {
 	/*
 	- Function:
 		- Attempts to filter the given data using a specific voltage threshold.
@@ -154,14 +160,15 @@ void ControlMotors(float filteredSignal, int sensorReadings[]) {
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
 
-            if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
+            if (abs(sensorReadings[i]) > CURRENT_THRESHOLD) {    // If overdrawing current
                 // Set to hold state
                 MOTORS[i].write(90);
             }
 
             else {
                 // Set to turn state
-                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 1023, 90, 180);    // Map signal to a rotation speed
+                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
+		    				    		     // ^ This is an arbitrary value for now (max contraction voltage)
                 MOTORS[i].write(rotation);    
             }
         }
