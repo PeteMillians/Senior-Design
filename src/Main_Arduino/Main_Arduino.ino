@@ -5,14 +5,14 @@ using namespace std;
 /* Pin Connections */
 const int EMG_PIN = A0;
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
-const int MOTOR_PINS[5] = {9, 10, 11, 12, 13};
+const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
 
 /* Motors */
 const Servo MOTORS[5];
 
 /* Thresholds */
 const int CURRENT_THRESHOLD = 2;   // Example current threshold level in Amps
-const float SIGNAL_THRESHOLD = 0.03;   // Example voltage threshold level in Volts
+const float SIGNAL_THRESHOLD = 0.05;   // Example voltage threshold level in Volts
 
 /* Conversions */
 const float sensorVoltageOffset = 2.5;  // For ACS712, it has a 2.5V offset for 0A current

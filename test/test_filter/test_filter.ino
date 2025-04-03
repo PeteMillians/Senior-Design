@@ -1,5 +1,5 @@
 /* Constants declared in header */
-const int SIGNAL_THRESHOLD = 500;   // Example voltage threshold level in range (0 : 1023)
+const float SIGNAL_THRESHOLD = 0.05;   // Example voltage threshold level in range (0 : 1023)
 
 struct Pair {
 	bool success;
@@ -13,7 +13,7 @@ void setup() {
 
 void loop() {
 
-  float signal = rand() % 1024;	// Random number between 0 and 1023
+  	float signal = float(rand() % 10) / 100;	// Random number between 0 and .09
 	float filteredSignal = Filter(signal);	// Filter the signal
 
 	Serial.print("Random Signal = ");
@@ -21,10 +21,12 @@ void loop() {
 	Serial.print("Filtered Signal = ");
 	Serial.println(filteredSignal);
 	Serial.println();
+
+	delay(100);
   
 }
 
-float Filter(int data) {
+float Filter(float data) {
 	/*
 	- Function:
 		- Public method for filtering the digital data. Calls the private filtering method.
@@ -46,7 +48,7 @@ float Filter(int data) {
 
 }
 
-Pair _TryFilter(int data) {
+Pair _TryFilter(float data) {
 	/*
 	- Function:
 		- Attempts to filter the given data using a specific voltage threshold.
