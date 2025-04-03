@@ -169,7 +169,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                 // Set to hold state
                 Serial.print("Motor ");
                 Serial.print(i + 1);
-                Serial.println(" in hold state.")
+                Serial.println(" in hold state.");
                 MOTORS[i].write(currentAngle[i]);
             }
 
@@ -177,7 +177,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                 // Set to turn state
                 Serial.print("Motor ");
                 Serial.print(i + 1);
-                Serial.println(" in turn state.")
+                Serial.println(" in turn state.");
                 // float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
 		    				    		                            // ^ This is an arbitrary value for now (max contraction voltage)
                 MOTORS[i].write(currentAngle[i] + 1);    
@@ -191,7 +191,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
             // Set to release state
             Serial.print("Motor ");
             Serial.print(i + 1);
-            Serial.println(" in release state.")
+            Serial.println(" in release state.");
             MOTORS[i].write(0);
         }
     }
