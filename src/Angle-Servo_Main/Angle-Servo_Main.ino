@@ -164,6 +164,8 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
             currentAngle[i] = MOTORS[i].read();
+            if (currentAngle[i] == 180)
+              currentAngle[i] = 0;
 
             if (abs(sensorReadings[i]) > CURRENT_THRESHOLD) {    // If overdrawing current
                 // Set to hold state
