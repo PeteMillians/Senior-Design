@@ -1,4 +1,5 @@
 ## Full Design of Arduino System
+
 The following outlines the full design of the EMG-Data Acquisition System
 
 ### Hardware Components
