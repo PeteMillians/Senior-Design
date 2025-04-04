@@ -11,8 +11,8 @@ const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
 const Servo MOTORS[5];
 
 /* Thresholds */
-const int CURRENT_THRESHOLD = 2;   // Example current threshold level in Amps
-const float SIGNAL_THRESHOLD = 0.05;   // Example voltage threshold level in Volts
+const int CURRENT_THRESHOLD = 4;   // Example current threshold level in Amps
+const float SIGNAL_THRESHOLD = 0.03;   // Example voltage threshold level in Volts
 
 /* Conversions */
 const float sensorVoltageOffset = 2.5;  // For ACS712, it has a 2.5V offset for 0A current
@@ -20,6 +20,8 @@ const float sensorSensitivity = 0.066;  // ACS712 30A model (0.066V per Ampere)
 
 /* Global variables */  
 bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
+float totalRotation[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // array of total angle rotated by each motor
+const float RELEASE_STEP = 10.0; // constant for how much the totalRotation will decrement each clock cycle during release
 
 /* Testing Variable */
 bool DEBUG = true;
@@ -171,8 +173,9 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         - Full control algorithm for motors
     - Arguments:
         - filteredSignal (float): Filtered EMG data
-        - sensorReadings (ints): Current sensor readings
+        - sensorReadings (floats): Current sensor readings
     */
+
 
     // Check that the EMG signal is powering the motors
     if (filteredSignal > SIGNAL_THRESHOLD) {
@@ -180,7 +183,14 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
 
-            if (abs(sensorReadings[i]) > CURRENT_THRESHOLD) {    // If overdrawing current
+            if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
+
+                if (DEBUG) {
+                    Serial.print("Motor ");
+                    Serial.print(i + 1);
+                    Serial.println(" in hold state.");
+                }
+
                 if (isOverdrawn[i]) {   // If it is consecutively overdrawn
                     // Set to hold state
                     MOTORS[i].write(90);
@@ -191,16 +201,8 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
 
                 // Continue rotating
                 float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
-                MOTORS[i].write(rotation);   
-                
-                
-                // Set to hold state
-                if (DEBUG) {
-                    Serial.print("Motor ");
-                    Serial.print(i + 1);
-                    Serial.println(" in hold state.");
-                }
-                MOTORS[i].write(90);
+                MOTORS[i].write(rotation);
+                totalRotation[i] += rotation;    
             }
 
             else {
@@ -210,15 +212,18 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                     Serial.print(i + 1);
                     Serial.println(" in turn state.");
                 }
+
+                isOverdrawn[i] = false;
                 float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
-		    				    		                            // ^ This is an arbitrary value for now (max contraction voltage)
-                MOTORS[i].write(rotation);    
+                MOTORS[i].write(rotation);
+                totalRotation[i] += rotation;    
             }
         }
     }
     else {
-        // Iterate through each current sensor pin
+        // Release state
         for (int i = 0; i < 5; i++) {
+            isOverdrawn[i] = false;
 
             // Set to release state
             if (DEBUG) {
@@ -226,7 +231,20 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                 Serial.print(i + 1);
                 Serial.println(" in release state.");
             }
-            MOTORS[i].write(0);
+
+            // Check if the motor has moved at all yet
+            if (totalRotation[i] > 0) {
+                MOTORS[i].write(80);  // slowly reverse motor
+                totalRotation[i] -= RELEASE_STEP;  // arbitrary value (requires testing)
+
+                if (totalRotation[i] <= 0) { // once the motor has gotten to its return state
+                    totalRotation[i] = 0;
+                    MOTORS[i].write(90);  // stop movement
+                }
+            } 
+            else {
+                MOTORS[i].write(90);  // already at original position, stop
+            }
         }
     }
 
