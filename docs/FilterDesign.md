@@ -1,4 +1,5 @@
 # Digital Filter Design
+
 The following outlines the design of the Digital Filter inside the Arduino R3
 
 ## Requirements
