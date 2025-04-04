@@ -18,6 +18,9 @@ const float SIGNAL_THRESHOLD = 0.05;   // Example voltage threshold level in Vol
 const float sensorVoltageOffset = 2.5;  // For ACS712, it has a 2.5V offset for 0A current
 const float sensorSensitivity = 0.066;  // ACS712 30A model (0.066V per Ampere)
 
+/* Global variables */
+bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
+
 // Pair declaration
 struct Pair{
     bool success;
@@ -164,10 +167,23 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         for (int i = 0; i < 5; i++) {
 
             if (abs(sensorReadings[i]) > CURRENT_THRESHOLD) {    // If overdrawing current
+                if (isOverdrawn[i]) {   // If it is consecutively overdrawn
+                    // Set to hold state
+                    MOTORS[i].write(90);
+                    continue;  // This should break out of line 133 loop, but remain in for-loop
+                }
+
+                isOverdrawn[i] = true;  // Record that this motor has overdrawn current
+
+                // Continue rotating
+                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
+                MOTORS[i].write(rotation);   
+                
+                
                 // Set to hold state
                 Serial.print("Motor ");
                 Serial.print(i + 1);
-                Serial.println(" in hold state.")
+                Serial.println(" in hold state.");
                 MOTORS[i].write(90);
             }
 
@@ -175,7 +191,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                 // Set to turn state
                 Serial.print("Motor ");
                 Serial.print(i + 1);
-                Serial.println(" in turn state.")
+                Serial.println(" in turn state.");
                 float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
 		    				    		                            // ^ This is an arbitrary value for now (max contraction voltage)
                 MOTORS[i].write(rotation);    
@@ -189,7 +205,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
             // Set to release state
             Serial.print("Motor ");
             Serial.print(i + 1);
-            Serial.println(" in release state.")
+            Serial.println(" in release state.");
             MOTORS[i].write(0);
         }
     }
