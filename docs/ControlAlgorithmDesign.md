@@ -21,15 +21,17 @@ The follow section outlines the 3 motor states which describe the motor.
 During the ***turn*** state, the motor should be in constant power and rotation. The motor will wind the finger up to simulate gripping
 
 ```c++
-myServo.write(currentAngle + newAngle)
+myServo.write(rotation speed between 90 and 180)
 ```
 
 #### Hold State
 
 During the ***hold*** state, the motor should stop rotating, but not unwind. The motor will simply hold its position
 
+Because there are natural current spikes which fall above our current threshold, we need to implement a check that the current is "overdrawing" consecutively in time
+
 ```c++
-myServo.write(currentAngle)
+myServo.write(90)
 ```
 
 #### Release State
@@ -37,16 +39,16 @@ myServo.write(currentAngle)
 During the ***release*** state, the motor should stop rotating and unwind. The motor should simulate releasing its grip
 
 ```c++
-myServo.write(0)
+myServo.write(rotation speed between 0 and 90)
 ```
 
 ## Public Methods
-- ***void ControlMotors(float filteredSignal, int sensorReadings[])***
+- ***void ControlMotors(float filteredSignal, float sensorReadings[])***
     - Function:
         - Full control algorithm for motors
     - Arguments:
         - filteredSignal (float): Filtered EMG data
-        - sensorReadings (ints): Current sensor readings
+        - sensorReadings (floats): Current sensor readings
 
 ## Testing
 
@@ -72,8 +74,9 @@ ControlMotors(filteredSignal, currentReadings);
 /* Constants declared in header */
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {9, 10, 11, 12, 13};
-const int CURRENT_THRESHOLD = 500;   # Example current threshold level in range (0 : 1023)
-const int SIGNAL_THRESHOLD = 500;   # Example voltage threshold level in range (0 : 1023)
+const float CURRENT_THRESHOLD = 2;   # Example current threshold level in range (0 : 1023)
+const float SIGNAL_THRESHOLD = 0.03;   # Example voltage threshold level in range (0 : 1023)
+bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
 const Servo MOTORS[5];
 
 .
@@ -120,6 +123,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         - sensorReadings (ints): Current sensor readings
     */
 
+
     // Check that the EMG signal is powering the motors
     if (filteredSignal > SIGNAL_THRESHOLD) {
 
@@ -127,12 +131,23 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         for (int i = 0; i < 5; i++) {
 
             if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
-                // Set to hold state
-                MOTORS[i].write(90);
+
+                if (isOverdrawn[i]) {   // If it is consecutively overdrawn
+                    // Set to hold state
+                    MOTORS[i].write(90);
+                    continue;  // This should break out of line 133 loop, but remain in for-loop
+                }
+
+                isOverdrawn[i] = true;  // Record that this motor has overdrawn current
+
+                // Continue rotating
+                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
+                MOTORS[i].write(rotation);    
             }
 
             else {
                 // Set to turn state
+                isOverdrawn[i] = false;
                 float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
                 MOTORS[i].write(rotation);    
             }
@@ -141,8 +156,9 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
     else {
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
-
+            
             // Set to release state
+            isOverdrawn[i] = false;
             MOTORS[i].write(0);
         }
     }
