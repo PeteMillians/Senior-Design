@@ -21,10 +21,15 @@ const float sensorSensitivity = 0.066;  // ACS712 30A model (0.066V per Ampere)
 /* Global variables */
 bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
 
-// Pair declaration
-struct Pair{
+/* Testing Variable */
+bool DEBUG = true;
+
+/* Pair Definition */
+struct Pair {
     bool success;
     float data;
+
+    Pair(bool s, float d) : success(s), data(d) {}
 };
 
 void setup() {
@@ -38,24 +43,30 @@ void setup() {
 
 void loop() {
     float rawSignal = ReadInput(EMG_PIN);   // Read raw data from MyoWare EMG Sensor
-    Serial.print("Raw Signal = ");
-    Serial.print(rawSignal);
-    Serial.println(" V");
+    if (DEBUG) {
+        Serial.print("Raw Signal = ");
+        Serial.print(rawSignal);
+        Serial.println(" V");
+    }
 
     float filteredSignal = Filter(rawSignal);   // Filter raw signal
-    Serial.print("Filtered Signal = ");
-    Serial.print(filteredSignal);
-    Serial.println(" V");
+    if (DEBUG) {
+        Serial.print("Filtered Signal = ");
+        Serial.print(filteredSignal);
+        Serial.println(" V");
+    }
 
     float sensorReadings[5];
 
     for (int i = 0; i < 5; i++)  {
         sensorReadings[i] = (ReadInput(CURRENT_PINS[i]) - sensorVoltageOffset) / sensorSensitivity; // Read current sensor pins in Amperes
-        Serial.print("Sensor Reading for");
-        Serial.print(i + 1);
-        Serial.print(" = ");
-        Serial.print(sensorReadings[i]);
-        Serial.println(" A");
+        if (DEBUG) {
+            Serial.print("Sensor Reading for");
+            Serial.print(i + 1);
+            Serial.print(" = ");
+            Serial.print(sensorReadings[i]);
+            Serial.println(" A");
+        }
     }
 
     ControlMotors(filteredSignal, sensorReadings);  // Control motors using filtered signal and current sensor readings
@@ -76,7 +87,7 @@ float ReadInput(int pinNumber) {
 
     Pair input = _TryReadInput(pinNumber);
     if (!input.success) {
-        Serial.println("Error reading input");
+        Serial.println("ERROR: Failure reading input at pin " + String(pinNumber));
         return 0.0;
     }
 
@@ -94,7 +105,7 @@ Pair _TryReadInput(int pinNumber) {
         - float: the value read from the pin as a float
     */
    
-    Pair input;
+    Pair input(false, 0.0);
 
     float value = (analogRead(pinNumber) / 1023.0) * 5.0; // Input value in Volts
 
@@ -118,7 +129,7 @@ float Filter(float data) {
 	Pair filterPair = _TryFilter(data);
 
 	if (!filterPair.success) {
-		Serial.println("Filter Failure");
+		Serial.println("ERROR: Failure filtering data");
 		return 0.0;
 	}
 	
@@ -136,7 +147,7 @@ Pair _TryFilter(float data) {
 		- Returns a boolean indicating if filtering was successful, and the filtered value.
 	*/
 
-	Pair tryFilter;
+	Pair tryFilter(false, 0.0);
 	
 	if(data < SIGNAL_THRESHOLD) {
 		tryFilter.data = 0.0;
@@ -181,17 +192,21 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                 
                 
                 // Set to hold state
-                Serial.print("Motor ");
-                Serial.print(i + 1);
-                Serial.println(" in hold state.");
+                if (DEBUG) {
+                    Serial.print("Motor ");
+                    Serial.print(i + 1);
+                    Serial.println(" in hold state.");
+                }
                 MOTORS[i].write(90);
             }
 
             else {
                 // Set to turn state
-                Serial.print("Motor ");
-                Serial.print(i + 1);
-                Serial.println(" in turn state.");
+                if (DEBUG) {
+                    Serial.print("Motor ");
+                    Serial.print(i + 1);
+                    Serial.println(" in turn state.");
+                }
                 float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
 		    				    		                            // ^ This is an arbitrary value for now (max contraction voltage)
                 MOTORS[i].write(rotation);    
@@ -203,9 +218,11 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         for (int i = 0; i < 5; i++) {
 
             // Set to release state
-            Serial.print("Motor ");
-            Serial.print(i + 1);
-            Serial.println(" in release state.");
+            if (DEBUG) {
+                Serial.print("Motor ");
+                Serial.print(i + 1);
+                Serial.println(" in release state.");
+            }
             MOTORS[i].write(0);
         }
     }
