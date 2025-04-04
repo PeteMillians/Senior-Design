@@ -122,7 +122,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         - Full control algorithm for motors
     - Arguments:
         - filteredSignal (float): Filtered EMG data
-        - sensorReadings (ints): Current sensor readings
+        - sensorReadings (floats): Current sensor readings
     */
 
 
@@ -175,8 +175,8 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
             else {
                 MOTORS[i].write(90);  // already at original position, stop
             }
+        }
     }
-}
 
 }
 ```
