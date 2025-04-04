@@ -173,6 +173,8 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                 Serial.print(i + 1);
                 Serial.println(" in hold state.");
                 MOTORS[i].write(currentAngle[i]);
+		// TODO: Check if it is > CURRENT_THRESHOLD for at least 2 consecutive clock cycles
+		// Only set to hold state if above is true
             }
 
             else {
