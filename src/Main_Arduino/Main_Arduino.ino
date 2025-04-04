@@ -18,11 +18,14 @@ const float SIGNAL_THRESHOLD = 0.05;   // Example voltage threshold level in Vol
 const float sensorVoltageOffset = 2.5;  // For ACS712, it has a 2.5V offset for 0A current
 const float sensorSensitivity = 0.066;  // ACS712 30A model (0.066V per Ampere)
 
-/* Global variables */
+/* Global variables */  
 bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
 
 /* Testing Variable */
 bool DEBUG = true;
+
+/* Sampling Frequency */
+const int CLOCK_PERIOD = 500;   // 500 us (2kHz sampling frequency)
 
 /* Pair Definition */
 struct Pair {
@@ -71,7 +74,7 @@ void loop() {
 
     ControlMotors(filteredSignal, sensorReadings);  // Control motors using filtered signal and current sensor readings
 
-    delay(100); // Delay 100 ms
+    delayMicroseconds(CLOCK_PERIOD); // 2kHz sampling frequency (500 us)
 }
 
 float ReadInput(int pinNumber) {
