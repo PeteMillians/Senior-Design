@@ -74,6 +74,8 @@ const int EMG_PIN = A0;
 struct Pair {
     bool success;
     float data;
+
+    Pair(bool s, float d) : success(s), data(d) {}
 };
 
 void setup() {
@@ -116,7 +118,7 @@ float ReadInput(int pinNumber) {
 
     Pair input = _TryReadInput(pinNumber);
     if (!input.success) {
-        Serial.println("Error reading input");
+        Serial.println("Error reading input from pin" + String(pinNumber));
         return 0.0;
     }
 
@@ -134,7 +136,7 @@ Pair _TryReadInput(int pinNumber) {
         - float: the value read from the pin as a float
     */
    
-    Pair input;
+    Pair input(false, 0.0); // Instantiate bad input value in case an error occurs
 
     float value = (analogRead(pinNumber) / 1023.0) * 5.0; // Input value in Volts
 
