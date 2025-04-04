@@ -56,9 +56,9 @@ To test the Control Motor algorithm, we will copy the algorithm show below, fill
 
 ```c++
 
-int filteredSignal = rand() % 1024;   // Random number between 0 and 1023
+float filteredSignal = float(rand() % 10) / 100;   // Random number between 0 and .09
 
-int currentReadings[5];
+float currentReadings[5];
 
 for (int i = 0; i < 5; i++) {
     currentReadings[i] = analogRead(CURRENT_PINS[i]);
