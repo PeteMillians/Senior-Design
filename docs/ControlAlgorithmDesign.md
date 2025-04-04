@@ -78,6 +78,8 @@ const float CURRENT_THRESHOLD = 2;   # Example current threshold level in range 
 const float SIGNAL_THRESHOLD = 0.03;   # Example voltage threshold level in range (0 : 1023)
 bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
 const Servo MOTORS[5];
+float totalRotation[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // array of total angle rotated by each motor
+const float RELEASE_STEP = 10.0; // constant for how much the totalRotation will decrement each clock cycle during release
 
 .
 .
@@ -142,26 +144,39 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
 
                 // Continue rotating
                 float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
-                MOTORS[i].write(rotation);    
+                MOTORS[i].write(rotation);
+                totalRotation[i] += rotation;    
             }
 
             else {
                 // Set to turn state
                 isOverdrawn[i] = false;
                 float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
-                MOTORS[i].write(rotation);    
+                MOTORS[i].write(rotation);
+                totalRotation[i] += rotation;    
             }
         }
     }
     else {
-        // Iterate through each current sensor pin
+        // Release state
         for (int i = 0; i < 5; i++) {
-            
-            // Set to release state
             isOverdrawn[i] = false;
-            MOTORS[i].write(0);
-        }
+
+            // Check if the motor has moved at all yet
+            if (totalRotation[i] > 0) {
+                MOTORS[i].write(80);  // slowly reverse motor
+                totalRotation[i] -= RELEASE_STEP;  // arbitrary value (requires testing)
+
+                if (totalRotation[i] <= 0) { // once the motor has gotten to its return state
+                    totalRotation[i] = 0;
+                    MOTORS[i].write(90);  // stop movement
+                }
+            } 
+            else {
+                MOTORS[i].write(90);  // already at original position, stop
+            }
     }
+}
 
 }
 ```
