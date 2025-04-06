@@ -50,6 +50,15 @@ myServo.write(rotation speed between 0 and 90)
         - filteredSignal (float): Filtered EMG data
         - sensorReadings (floats): Current sensor readings
 
+## Private Methods
+- ***float _getCurrentThreshold(bool overdrawn[])***
+    - Function:
+        - Calculates current threshold value based on number of stalled motors
+    - Arguments:
+        - overdrawn: array of booleans that signify if a motor is overdrawn
+    - Returns:
+        - float: threshold value
+
 ## Testing
 
 To test the Control Motor algorithm, we will copy the algorithm show below, fill in the setup function proprerly, and use a random number generator to simulate an input signal for the EMG signal. We will use the ```Serial.print()``` method to print the random signal so we can ensure the motor is acting as intended. We will add print statements in the ```ControlMotor()``` method to print the state and the angle being written to ensure the function acts properly. We will also use print statements to log the current sensor readings to ensure the current levels fall below threshold (which also allows us to calibrate the threshold level). Throughout testing, we will sporadically use our hands to manually stop the motor, forcing overcurrent. We will ensure the proper current senses overdraw and turns to the hold state. The ```loop``` method will look something like this:
@@ -128,24 +137,18 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
     int stallIndex = -1;    // Initialize stallIndex out of range
     float maxCurrent = -9999;
 
-    // Calculate current threshold based on number of currently stalled motors
-    int numStalled = 0;
-    for (int i = 0; i < 5; i++) {
-        if (isOverdrawn[i]) {  
-            numStalled++;
-        }
-    }
-
     // Check that the EMG signal is powering the motors
     if (filteredSignal > SIGNAL_THRESHOLD) {
 
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
+            float currentThreshold = _getCurrentThreshold(isOverdrawn); // Get current threshold of current motor states
 
-            if (sensorReadings[i] < getCurrentThreshold(numStalled)) {    // If overdrawing current
+            if (sensorReadings[i] < currentThreshold) {    // If overdrawing current
 
+                // Find index of stalled motor
                 for (int i = 0; i < 5; i++) {
-                  if (sensorReadings[i] > maxCurrent) {
+                  if (sensorReadings[i] > maxCurrent && sensorReadings[i] < currentThreshold && !isOverdrawn[i]) {  // Find highest current who is under threshold and isn't already stalled
                     maxCurrent = sensorReadings[i]; // Update max current
                     stallIndex = i; // Find index of stalled motor
                   }
@@ -200,8 +203,25 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
 
 }
 
-float getCurrentThreshold(int numStalled) {
+float _getCurrentThreshold(bool overdrawn[]) {
+    /*
+        - Function:
+            - Calculates current threshold value based on number of stalled motors
+        - Arguments:
+            - overdrawn: array of booleans that signify if a motor is overdrawn
+        - Returns:
+            - float: threshold value
+    */
 
-    return 460 - (35 * numStalled);
+    int numStalled = 0;
+    for (int i = 0; i < sizeof(overdrawn) - 1; i++) {
+        if (overdrawn[i]) {
+            numStalled++;
+        }
+    }
+
+    float threshold = 460 - (35 * numStalled);
+
+    return threshold;
 }
 ```
