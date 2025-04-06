@@ -51,11 +51,21 @@ myServo.write(rotation speed between 0 and 90)
         - sensorReadings (floats): Current sensor readings
 
 ## Private Methods
+- ***int _getStallIndex(float sensorReadings[], bool overdrawn[], float currentThreshold)***
+  - Function:
+    - Iterate through sensors and motors to find which one is stalled
+  - Arguments:
+    - sensorReadings (floats): array of current-sensor values
+    - overdrawn (bools): array of booleans that signify if a motor is overdrawn
+    - currentThreshold (float): the minimum current that the sensorReadings must be for the motor to not be stalled
+  - Returns:
+    - An int value between 0 and the number of motors - 1 which symbolizes the index of the stalled motor
+
 - ***float _getCurrentThreshold(bool overdrawn[])***
     - Function:
         - Calculates current threshold value based on number of stalled motors
     - Arguments:
-        - overdrawn: array of booleans that signify if a motor is overdrawn
+        - overdrawn (bools): array of booleans that signify if a motor is overdrawn
     - Returns:
         - float: threshold value
 
@@ -216,6 +226,16 @@ float _getCurrentThreshold(bool overdrawn[]) {
 }
 
 int _getStallIndex(float sensorReadings[], bool overdrawn[], float currentThreshold) {
+  /*
+    - Function:
+      - Iterate through sensors and motors to find which one is stalled
+    - Arguments:
+      - sensorReadings (floats): array of current-sensor values
+      - overdrawn (bools): array of booleans that signify if a motor is overdrawn
+      - currentThreshold (float): the minimum current that the sensorReadings must be for the motor to not be stalled
+    - Returns:
+      - An int value between 0 and the number of motors - 1 which symbolizes the index of the stalled motor
+  */
   
   int stallIndex = -1;    // Initialize stallIndex out of range
   float maxCurrent = -9999;
