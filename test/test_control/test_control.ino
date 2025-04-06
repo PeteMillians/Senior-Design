@@ -50,74 +50,66 @@ void loop() {
 }
 
 void ControlMotors(float filteredSignal, float sensorReadings[]) {
-    /*
-    - Function:
-        - Full control algorithm for motors
-    - Arguments:
-        - filteredSignal (float): Filtered EMG data
-        - sensorReadings (floats): Current sensor readings
-    */
+  /*
+  - Function:
+      - Full control algorithm for motors
+  - Arguments:
+      - filteredSignal (float): Filtered EMG data
+      - sensorReadings (floats): Current sensor readings
+  */ 
 
-    // Check that the EMG signal is powering the motors
-    if (filteredSignal > SIGNAL_THRESHOLD) {
+  // Check that the EMG signal is powering the motors
+  if (filteredSignal > SIGNAL_THRESHOLD) {
 
+    
+    // Iterate through each current sensor pin
+    for (int i = 0; i < 5; i++) {
       float currentThreshold = _getCurrentThreshold(isOverdrawn); // Get current threshold of current motor states
-        // Iterate through each current sensor pin
-        for (int i = 0; i < 5; i++) {
-          // Check so a stalled state will stay stalled if nothing has changed
-          if (isOverdrawn[i] && sensorReadings[i] < currentThreshold + 35) {
-            continue;
-          }
 
-          if (sensorReadings[i] < currentThreshold) {    // If overdrawing current
-            int stallIndex = _getStallIndex(sensorReadings, isOverdrawn, currentThreshold);
+      if (sensorReadings[i] < currentThreshold) {    // If overdrawing current
 
-            // If this index isn't the stalled one, keep moving
-            if (i != stallIndex) {
-              continue;
-            }
-            isOverdrawn[i] = true;  // Record that this motor has overdrawn current
-      
-            Serial.println("MOTOR " + String(i + 1) + " IN HOLD STATE");
+        // stallIndex = _getStallIndex(sensorReadings, isOverdrawn, currentThreshold);
 
-            // Set to hold state
-            MOTORS[i].write(90);
+        // If this index isn't the stalled one, keep moving
+        // if (i != stallIndex) {
+        //   continue;
+        // }
 
-          }
+        isOverdrawn[i] = true;  // Record that this motor has overdrawn current
+    
+        // Set to hold state
+        MOTORS[i].write(90);
+      }
 
-          else {
-              // Set to turn state
-              // Serial.println("Turn State");
-              isOverdrawn[i] = false;
-              float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180);    // Map signal to a rotation speed
-              // Serial.print("Rotation Speed = ");
-              // Serial.println(rotation);
-              MOTORS[i].write(rotation);
-              totalRotation[i] += rotation;    
-          }
-        }
+      else {
+        // Set to turn state
+        isOverdrawn[i] = false;
+        float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
+        MOTORS[i].write(rotation);
+        totalRotation[i] += rotation;    
+      }
     }
-    else {
-        // Release state
-        for (int i = 0; i < 5; i++) {
-            isOverdrawn[i] = false;
-            Serial.println(totalRotation[i]);
+  }
+  else {
+    // Release state
+    for (int i = 0; i < 5; i++) {
+      isOverdrawn[i] = false;
 
-            // Check if the motor has moved at all yet
-            if (totalRotation[i] > 0) {
-                MOTORS[i].write(80);  // reverse motor
-                totalRotation[i] -= RELEASE_STEP;  // arbitrary value (requires testing)
+      // Check if the motor has moved at all yet
+      if (totalRotation[i] > 0) {
+        MOTORS[i].write(80);  // slowly reverse motor
+        totalRotation[i] -= RELEASE_STEP;  // arbitrary value (requires testing)
 
-                if (totalRotation[i] <= 0) { // once the motor has gotten to its return state
-                    totalRotation[i] = 0;
-                    MOTORS[i].write(90);  // stop movement
-                }
-            } 
-            else {
-                MOTORS[i].write(90);  // already at original position, stop
-            }
+        if (totalRotation[i] <= 0) { // once the motor has gotten to its return state
+          totalRotation[i] = 0;
+          MOTORS[i].write(90);  // stop movement
         }
+      } 
+      else {
+        MOTORS[i].write(90);  // already at original position, stop
+      }
     }
+  }
 
 }
 
@@ -133,29 +125,37 @@ float _getCurrentThreshold(bool overdrawn[]) {
 
   int numStalled = 0;
   for (int i = 0; i < sizeof(overdrawn) - 1; i++) {
-      if (overdrawn[i]) {
-          numStalled++;
-      }
+    if (overdrawn[i]) {
+      numStalled++;
+    }
   }
 
   float threshold = 460 - (35 * numStalled);
-
-  Serial.println("Current Treshold = " + String(threshold));
 
   return threshold;
 }
 
 int _getStallIndex(float sensorReadings[], bool overdrawn[], float currentThreshold) {
-  
-  int stallIndex = -1;    // Initialize stallIndex out of range
-  float maxCurrent = -9999;
+/*
+  - Function:
+    - Iterate through sensors and motors to find which one is stalled
+  - Arguments:
+    - sensorReadings (floats): array of current-sensor values
+    - overdrawn (bools): array of booleans that signify if a motor is overdrawn
+    - currentThreshold (float): the minimum current that the sensorReadings must be for the motor to not be stalled
+  - Returns:
+    - An int value between 0 and the number of motors - 1 which symbolizes the index of the stalled motor
+*/
 
-  for (int i = 0; i < 5; i++) {
-    if (sensorReadings[i] > maxCurrent && sensorReadings[i] < currentThreshold && !overdrawn[i]) {  // Find highest current who is under threshold and isn't already stalled
-      maxCurrent = sensorReadings[i]; // Update max current
-      stallIndex = i; // Find index of stalled motor
-    }
+int stallIndex = -1;    // Initialize stallIndex out of range
+float maxCurrent = -9999;
+
+for (int i = 0; i < 5; i++) {
+  if (sensorReadings[i] > maxCurrent && sensorReadings[i] < currentThreshold && !Overdrawn[i]) {  // Find highest current who is under threshold and isn't already stalled
+    maxCurrent = sensorReadings[i]; // Update max current
+    stallIndex = i; // Find index of stalled motor
   }
+}
 
-  return stallIndex;
+return stallIndex;
 }
