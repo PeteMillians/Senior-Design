@@ -2,12 +2,15 @@
 
 /* Constants declared in header */
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
-const int MOTOR_PINS[5] = {3, 5, 6, 9, 10};
-const int CURRENT_THRESHOLD = 2;   // Example current threshold 
-const int SIGNAL_THRESHOLD = 0.03;   // Example voltage threshold
+const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
+const int CURRENT_THRESHOLD = 1024;   // Example current threshold 
+const int SIGNAL_THRESHOLD = 500;   // Example voltage threshold
 const Servo MOTORS[5];
 float totalRotation[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // array of total angle rotated by each motor
-const float RELEASE_STEP = 10.0; // constant for how much the totalRotation will decrement each clock cycle during release
+bool isOverdrawn[5] = {false, false, false, false, false};
+const float RELEASE_STEP = 1.0; // constant for how much the totalRotation will decrement each clock cycle during release
+
+int totalTime = 0;
 
 void setup() {
 
@@ -22,7 +25,11 @@ void setup() {
 
 void loop() {
 
-  float filteredSignal = float(rand() % 10) / 100;   // Random number between 0 and 0.9
+  float filteredSignal = 700;   // Random number between 0 and 1023
+
+  if(totalTime > 5000) {
+    filteredSignal = 300;
+  }
 
   Serial.print("Filtered Signal = ");
   Serial.println(filteredSignal);
@@ -33,7 +40,10 @@ void loop() {
     currentReadings[i] = float(analogRead(CURRENT_PINS[i]));
     }
 
-    ControlMotors(filteredSignal, currentReadings);
+  ControlMotors(filteredSignal, currentReadings);
+
+  delay(100);
+  totalTime += 100;
 
 }
 
@@ -64,15 +74,21 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                 isOverdrawn[i] = true;  // Record that this motor has overdrawn current
 
                 // Continue rotating
-                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
+                Serial.println("Hold State");
+                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 1024, 90, 180);    // Map signal to a rotation speed
+                Serial.print("Rotation Speed = ");
+                Serial.println(rotation);
                 MOTORS[i].write(rotation);
                 totalRotation[i] += rotation;    
             }
 
             else {
                 // Set to turn state
+                Serial.println("Turn State");
                 isOverdrawn[i] = false;
-                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
+                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 1024, 90, 180);    // Map signal to a rotation speed
+                Serial.print("Rotation Speed = ");
+                Serial.println(rotation);
                 MOTORS[i].write(rotation);
                 totalRotation[i] += rotation;    
             }
@@ -82,10 +98,11 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         // Release state
         for (int i = 0; i < 5; i++) {
             isOverdrawn[i] = false;
+            Serial.println(totalRotation[i]);
 
             // Check if the motor has moved at all yet
             if (totalRotation[i] > 0) {
-                MOTORS[i].write(80);  // slowly reverse motor
+                MOTORS[i].write(0);  // reverse motor
                 totalRotation[i] -= RELEASE_STEP;  // arbitrary value (requires testing)
 
                 if (totalRotation[i] <= 0) { // once the motor has gotten to its return state
