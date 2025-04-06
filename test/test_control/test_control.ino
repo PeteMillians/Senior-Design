@@ -3,8 +3,8 @@
 /* Constants declared in header */
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {3, 5, 6, 9, 10};
-const int CURRENT_THRESHOLD = 2;   // Example current threshold level in range (0 : 1023)
-const int SIGNAL_THRESHOLD = 0.03;   // Example voltage threshold level in range (0 : 1023)
+const int CURRENT_THRESHOLD = 2;   // Example current threshold 
+const int SIGNAL_THRESHOLD = 0.03;   // Example voltage threshold
 const Servo MOTORS[5];
 float totalRotation[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // array of total angle rotated by each motor
 const float RELEASE_STEP = 10.0; // constant for how much the totalRotation will decrement each clock cycle during release

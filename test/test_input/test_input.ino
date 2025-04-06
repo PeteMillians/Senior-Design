@@ -1,4 +1,4 @@
-const int emgPin = A5;  // Analog pin connected to MyoWare sensor
+const int emgPin = A0;  // Analog pin connected to MyoWare sensor
 float voltage;          // Variable to store voltage value
 
 void setup() {
