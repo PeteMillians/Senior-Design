@@ -74,12 +74,12 @@ ControlMotors(filteredSignal, currentReadings);
 /* Constants declared in header */
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {9, 10, 11, 12, 13};
-const float CURRENT_THRESHOLD = 538.5;   # Example current threshold level in range (0 : 1023)
-const float SIGNAL_THRESHOLD = 6.1;   # Example voltage threshold level in range (0 : 1023)
+const float CURRENT_THRESHOLD = 450;   // Example current threshold level in range (0 : 1023)
+const float SIGNAL_THRESHOLD = 6.1;   // Example voltage threshold level in range (0 : 1023)
 bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
 const Servo MOTORS[5];
 float totalRotation[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // array of total angle rotated by each motor
-const float RELEASE_STEP = 10.0; // constant for how much the totalRotation will decrement each clock cycle during release
+const float RELEASE_STEP = 20.0; // constant for how much the totalRotation will decrement each clock cycle during release
 
 .
 .
@@ -132,13 +132,18 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
 
-            if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
+            if (sensorReadings[i] < CURRENT_THRESHOLD) {    // If overdrawing current
 
-                if (isOverdrawn[i]) {   // If it is consecutively overdrawn
+                // TODO: If any motor overdraws, all will increase their current.
+                //       During testing, we saw that the stalled motor draws the least current of the 5
+
+                if (isOverdrawn[i] && i == stallIndex) {   // If it is consecutively overdrawn
                     // Set to hold state
                     MOTORS[i].write(90);
                     continue;  // This should break out of line 133 loop, but remain in for-loop
                 }
+
+                int stallIndex = sensorReadings.index(min(sensorReadings)); // Index of stalled motor
 
                 isOverdrawn[i] = true;  // Record that this motor has overdrawn current
 
