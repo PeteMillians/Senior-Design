@@ -25,10 +25,10 @@ void setup() {
 
 void loop() {
 
-  float filteredSignal = 700;   // Random number between 0 and 1023
+  float filteredSignal = 700;   // On signal for turn state
 
   if(totalTime > 500) {
-    filteredSignal = 300;
+    filteredSignal = 300;   // Off signal for release stae
   }
 
   Serial.print("Filtered Signal = ");
