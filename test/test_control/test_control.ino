@@ -59,6 +59,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
     */
 
     int stallIndex = -1;    // Initialize stallIndex out of range
+    float minCurrent = -9999;
 
     // Check that the EMG signal is powering the motors
     if (filteredSignal > SIGNAL_THRESHOLD) {
@@ -74,7 +75,11 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                     continue;  // This should break out of line 133 loop, but remain in for-loop
                 }
 
-                stallIndex = sensorReadings.index(min(sensorReadings)); // Index of stalled motor
+                for (int i = 0; i < 5; i++) {
+                  if (sensorReadings[i] > minCurrent) {
+                    stallIndex = i; // Find index of stalled motor
+                  }
+                }
 
                 isOverdrawn[i] = true;  // Record that this motor has overdrawn current
 
