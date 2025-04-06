@@ -74,7 +74,7 @@ ControlMotors(filteredSignal, currentReadings);
 /* Constants declared in header */
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {9, 10, 11, 12, 13};
-const float CURRENT_THRESHOLD = 450;   // Example current threshold level in range (0 : 1023)
+// const float CURRENT_THRESHOLD = 450;   // Example current threshold level in range (0 : 1023)
 const float SIGNAL_THRESHOLD = 6.1;   // Example voltage threshold level in range (0 : 1023)
 bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
 const Servo MOTORS[5];
@@ -128,13 +128,21 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
     int stallIndex = -1;    // Initialize stallIndex out of range
     float maxCurrent = -9999;
 
+    // Calculate current threshold based on number of currently stalled motors
+    int numStalled = 0;
+    for (int i = 0; i < 5; i++) {
+        if (isOverdrawn[i]) {  
+            numStalled++;
+        }
+    }
+
     // Check that the EMG signal is powering the motors
     if (filteredSignal > SIGNAL_THRESHOLD) {
 
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
 
-            if (sensorReadings[i] < CURRENT_THRESHOLD) {    // If overdrawing current
+            if (sensorReadings[i] < getCurrentThreshold(numStalled)) {    // If overdrawing current
 
                 for (int i = 0; i < 5; i++) {
                   if (sensorReadings[i] > maxCurrent) {
@@ -149,6 +157,8 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                     continue;  // This should break out of line 133 loop, but remain in for-loop
                 }
 
+
+                // TODO: Need to check if this is still necessary
 
                 isOverdrawn[stallIndex] = true;  // Record that this motor has overdrawn current
 
@@ -188,5 +198,10 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         }
     }
 
+}
+
+float getCurrentThreshold(int numStalled) {
+
+    return 460 - (35 * numStalled);
 }
 ```

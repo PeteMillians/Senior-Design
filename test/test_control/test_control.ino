@@ -61,13 +61,21 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
     int stallIndex = -1;    // Initialize stallIndex out of range
     float maxCurrent = -9999;
 
+    // Calculate current threshold based on number of currently stalled motors
+    int numStalled = 0;
+    for (int i = 0; i < 5; i++) {
+        if (isOverdrawn[i]) {  
+            numStalled++;
+        }
+    }
+
     // Check that the EMG signal is powering the motors
     if (filteredSignal > SIGNAL_THRESHOLD) {
 
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
 
-            if (sensorReadings[i] < CURRENT_THRESHOLD) {    // If overdrawing current
+            if (sensorReadings[i] < getCurrentThreshold(numStalled)) {    // If overdrawing current
 
                 for (int i = 0; i < 5; i++) {
                   if (sensorReadings[i] > maxCurrent) {
@@ -128,4 +136,9 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         }
     }
 
+}
+
+float getCurrentThreshold(int numStalled) {
+
+  return 460 - (35 * numStalled);
 }
