@@ -18,7 +18,7 @@ const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
 const float CURRENT_THRESHOLD = 450;   // Example current threshold 
 const float SIGNAL_THRESHOLD = 6.1;   // Example voltage threshold
-const motor MOTORS[5];
+motor MOTORS[5];
 const float RELEASE_STEP = 20; // constant for how much the totalRotation will decrement each clock cycle during release
 
 int totalTime = 0;
@@ -82,18 +82,18 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
       else {
         MOTORS[i].state = TURN;
       }
-      _UpdateState(MOTORS[i], sensorReadings[i]);
+      _UpdateState(MOTORS[i], sensorReadings[i], filteredSignal);
     }
   }
   else {
     for (int i = 0; i < sizeof(MOTORS) - 1; i++) {
       MOTORS[i].state = RELEASE;
-      _UpdateState(MOTORS[i], 0.0);
+      _UpdateState(MOTORS[i], 0.0, 0.0);
     }
   }
 }
 
-void _UpdateState(motor currMotor, float sensorReading) {
+void _UpdateState(motor currMotor, float sensorReading, float filteredSignal) {
 /*
   - Function:
     - Updates the state of a motor and sets its values accordingle
@@ -108,7 +108,7 @@ switch(currMotor.state) {
     currMotor.overdrawn = false;
     float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
     currMotor.servo.write(rotation);
-    currMotor.rotation += rotation;    
+    currMotor.totalRotation += rotation;    
     break;
   case (HOLD):
     // int stallIndex = _getStallIndex(sensorReading, currentThreshold);
