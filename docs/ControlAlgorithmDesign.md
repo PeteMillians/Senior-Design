@@ -125,6 +125,8 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
         - sensorReadings (floats): Current sensor readings
     */
 
+    int stallIndex = -1;    // Initialize stallIndex out of range
+    float maxCurrent = -9999;
 
     // Check that the EMG signal is powering the motors
     if (filteredSignal > SIGNAL_THRESHOLD) {
@@ -134,18 +136,21 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
 
             if (sensorReadings[i] < CURRENT_THRESHOLD) {    // If overdrawing current
 
-                // TODO: If any motor overdraws, all will increase their current.
-                //       During testing, we saw that the stalled motor draws the least current of the 5
+                for (int i = 0; i < 5; i++) {
+                  if (sensorReadings[i] > maxCurrent) {
+                    maxCurrent = sensorReadings[i]; // Update max current
+                    stallIndex = i; // Find index of stalled motor
+                  }
+                }
 
-                if (isOverdrawn[i] && i == stallIndex) {   // If it is consecutively overdrawn
+                if (isOverdrawn[i]) {   // If it is consecutively overdrawn
                     // Set to hold state
                     MOTORS[i].write(90);
                     continue;  // This should break out of line 133 loop, but remain in for-loop
                 }
 
-                int stallIndex = sensorReadings.index(min(sensorReadings)); // Index of stalled motor
 
-                isOverdrawn[i] = true;  // Record that this motor has overdrawn current
+                isOverdrawn[stallIndex] = true;  // Record that this motor has overdrawn current
 
                 // Continue rotating
                 float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
