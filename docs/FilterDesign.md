@@ -29,7 +29,7 @@ The following outlines the design of the Digital Filter inside the Arduino R3
 To test the filter algorithm, we will copy the algorithm shown below, fill in the setup function properly, and use a c++ random number generator to test the filtering. We will use the ```Serial.print()``` method to print the random number, and then reuse the method to print the output of the filter given that value. The ```loop()``` will look something like this:
 
 ```c++
-	float signal = float(rand() % 10) / 100;	// Random number between 0 and .09
+	float signal = float(rand() % 1023);	// Random number between 0 and .09
 	float filteredSignal = Filter(signal);	// Filter the signal
 
 	// Print the Filtered Signal value
@@ -54,7 +54,7 @@ A convolutional filter requires an array of input signals to convolve upon, give
 ## Algorithm
 ```c++
 /* Constants declared in header */
-const int SIGNAL_THRESHOLD = 0.03;   // Voltage threshold from testing
+const float SIGNAL_THRESHOLD = 6.1;   // Voltage threshold from testing
 
 struct Pair {
 	bool success;

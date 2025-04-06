@@ -74,8 +74,8 @@ ControlMotors(filteredSignal, currentReadings);
 /* Constants declared in header */
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {9, 10, 11, 12, 13};
-const float CURRENT_THRESHOLD = 2;   # Example current threshold level in range (0 : 1023)
-const float SIGNAL_THRESHOLD = 0.03;   # Example voltage threshold level in range (0 : 1023)
+const float CURRENT_THRESHOLD = 538.5;   # Example current threshold level in range (0 : 1023)
+const float SIGNAL_THRESHOLD = 6.1;   # Example voltage threshold level in range (0 : 1023)
 bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
 const Servo MOTORS[5];
 float totalRotation[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // array of total angle rotated by each motor
@@ -143,7 +143,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                 isOverdrawn[i] = true;  // Record that this motor has overdrawn current
 
                 // Continue rotating
-                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
+                float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
                 MOTORS[i].write(rotation);
                 totalRotation[i] += rotation;    
             }
@@ -151,7 +151,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
             else {
                 // Set to turn state
                 isOverdrawn[i] = false;
-                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
+                float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
                 MOTORS[i].write(rotation);
                 totalRotation[i] += rotation;    
             }

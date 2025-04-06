@@ -51,7 +51,7 @@ The following outlines the full design of the EMG-Data Acquisition System
   - Arguments:
     - data (int): The raw EMG data 
   - Returns:
-    - Returns a boolean indicating if filtering was successful, and the filtered value.
+    - Returns a boolean indicating if filtering was successful, and the filtered value in a range from 0 to 1023.
     
 - ***Pair _TryReadInput(int pinNumber)***
     - Function:
@@ -139,7 +139,7 @@ Pair _TryReadInput(int pinNumber) {
    
     Pair input(false, 0.0); // Instantiate bad input value in case an error occurs
 
-    float value = (analogRead(pinNumber) / 1023.0) * 5.0; // Input value in Volts
+    float value = analogRead(pinNumber); // Input value in Volts
 
     input.success = true;  
     input.data = value;

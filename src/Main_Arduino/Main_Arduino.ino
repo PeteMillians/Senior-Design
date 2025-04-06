@@ -11,12 +11,12 @@ const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
 const Servo MOTORS[5];
 
 /* Thresholds */
-const int CURRENT_THRESHOLD = 4;   // Example current threshold level in Amps
-const float SIGNAL_THRESHOLD = 0.03;   // Example voltage threshold level in Volts
+const int CURRENT_THRESHOLD = 538.5;   // Current threshold level 
+const float SIGNAL_THRESHOLD = 6.15;   // Voltage threshold level 
 
 /* Conversions */
-const float sensorVoltageOffset = 2.5;  // For ACS712, it has a 2.5V offset for 0A current
-const float sensorSensitivity = 0.066;  // ACS712 30A model (0.066V per Ampere)
+// const float sensorVoltageOffset = 2.5;  // For ACS712, it has a 2.5V offset for 0A current
+// const float sensorSensitivity = 0.066;  // ACS712 30A model (0.066V per Ampere)
 
 /* Global variables */  
 bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
@@ -64,7 +64,8 @@ void loop() {
     float sensorReadings[5];
 
     for (int i = 0; i < 5; i++)  {
-        sensorReadings[i] = (ReadInput(CURRENT_PINS[i]) - sensorVoltageOffset) / sensorSensitivity; // Read current sensor pins in Amperes
+        // sensorReadings[i] = (ReadInput(CURRENT_PINS[i]) - sensorVoltageOffset) / sensorSensitivity; // Read current sensor pins in Amperes
+        sensorReadings[i] = ReadInput(CURRENT_PINS[i]); // Read current sensor pins 
         if (DEBUG) {
             Serial.print("Sensor Reading for");
             Serial.print(i + 1);
@@ -112,7 +113,8 @@ Pair _TryReadInput(int pinNumber) {
    
     Pair input(false, 0.0);
 
-    float value = (analogRead(pinNumber) / 1023.0) * 5.0; // Input value in Volts
+    // float value = (analogRead(pinNumber) / 1023.0) * 5.0; // Input value in Volts
+    float value = analogRead(pinNumber);
 
     input.success = true;  
     input.data = value;
@@ -200,7 +202,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                 isOverdrawn[i] = true;  // Record that this motor has overdrawn current
 
                 // Continue rotating
-                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
+                float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
                 MOTORS[i].write(rotation);
                 totalRotation[i] += rotation;    
             }
@@ -214,7 +216,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
                 }
 
                 isOverdrawn[i] = false;
-                float rotation = map(filteredSignal, SIGNAL_THRESHOLD, 0.5, 90, 180);    // Map signal to a rotation speed
+                float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
                 MOTORS[i].write(rotation);
                 totalRotation[i] += rotation;    
             }
