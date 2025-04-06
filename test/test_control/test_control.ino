@@ -69,17 +69,19 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
 
             if (sensorReadings[i] < CURRENT_THRESHOLD) {    // If overdrawing current
 
-                if (isOverdrawn[i] && i == stallIndex) {   // If it is consecutively overdrawn
-                    // Set to hold state
-                    MOTORS[i].write(90);
-                    continue;  // This should break out of line 133 loop, but remain in for-loop
-                }
-
                 for (int i = 0; i < 5; i++) {
                   if (sensorReadings[i] > minCurrent) {
+                    minCurrent = sensorReadings[i];
                     stallIndex = i; // Find index of stalled motor
                   }
                 }
+                if (isOverdrawn[i] && i == stallIndex) {   // If it is consecutively overdrawn
+                    // Set to hold state
+                    MOTORS[i].write(90);
+                    Serial.println("STALLING MOTOR " + String(i + 1));
+                    continue;  // This should break out of line 133 loop, but remain in for-loop
+                }
+
 
                 isOverdrawn[i] = true;  // Record that this motor has overdrawn current
 
