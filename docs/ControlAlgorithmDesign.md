@@ -151,10 +151,6 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
       // Iterate through each current sensor pin
       for (int i = 0; i < 5; i++) {
         float currentThreshold = _getCurrentThreshold(isOverdrawn); // Get current threshold of current motor states
-        // Check so a stalled state will stay stalled if nothing has changed
-        if (isOverdrawn[i] && sensorReadings[i] < currentThreshold + 35) {
-          continue;
-        }
 
         if (sensorReadings[i] < currentThreshold) {    // If overdrawing current
 
