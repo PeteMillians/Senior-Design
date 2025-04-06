@@ -8,7 +8,7 @@ const int SIGNAL_THRESHOLD = 500;   // Example voltage threshold
 const Servo MOTORS[5];
 float totalRotation[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // array of total angle rotated by each motor
 bool isOverdrawn[5] = {false, false, false, false, false};
-const float RELEASE_STEP = 1.0; // constant for how much the totalRotation will decrement each clock cycle during release
+const float RELEASE_STEP = 20; // constant for how much the totalRotation will decrement each clock cycle during release
 
 int totalTime = 0;
 
@@ -27,7 +27,7 @@ void loop() {
 
   float filteredSignal = 700;   // Random number between 0 and 1023
 
-  if(totalTime > 5000) {
+  if(totalTime > 500) {
     filteredSignal = 300;
   }
 
@@ -102,7 +102,7 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
 
             // Check if the motor has moved at all yet
             if (totalRotation[i] > 0) {
-                MOTORS[i].write(0);  // reverse motor
+                MOTORS[i].write(80);  // reverse motor
                 totalRotation[i] -= RELEASE_STEP;  // arbitrary value (requires testing)
 
                 if (totalRotation[i] <= 0) { // once the motor has gotten to its return state
