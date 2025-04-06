@@ -21,7 +21,7 @@ const float sensorSensitivity = 0.066;  // ACS712 30A model (0.066V per Ampere)
 /* Global variables */  
 bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
 float totalRotation[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // array of total angle rotated by each motor
-const float RELEASE_STEP = 10.0; // constant for how much the totalRotation will decrement each clock cycle during release
+const float RELEASE_STEP = 20.0; // constant for how much the totalRotation will decrement each clock cycle during release
 
 /* Testing Variable */
 bool DEBUG = true;
