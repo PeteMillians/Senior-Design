@@ -66,16 +66,17 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
 
         // Iterate through each current sensor pin
         for (int i = 0; i < 5; i++) {
+          float currentThreshold = _getCurrentThreshold(isOverdrawn); // Get current threshold of current motor states
 
-            if (sensorReadings[i] < getCurrentThreshold(isOverdrawn)) {    // If overdrawing current
-
+          if (sensorReadings[i] < currentThreshold) {    // If overdrawing current
+                // Find index of stalled motor
                 for (int i = 0; i < 5; i++) {
-                  if (sensorReadings[i] > maxCurrent && sensorReadings[i] < getCurrentThreshold(isOverdrawn)) {
-                    maxCurrent = sensorReadings[i];
+                  if (sensorReadings[i] > maxCurrent && sensorReadings[i] < currentThreshold && !isOverdrawn[i]) {  // Find highest current who is under threshold and isn't already stalled
+                    maxCurrent = sensorReadings[i]; // Update max current
                     stallIndex = i; // Find index of stalled motor
                   }
                 }
-                if (isOverdrawn[stallIndex]) {   // If it is consecutively overdrawn
+                if (isOverdrawn[i]) {   // If it is consecutively overdrawn
                     // Set to hold state
                     MOTORS[i].write(90);
                     Serial.println("STALLING MOTOR " + String(i + 1));
@@ -130,16 +131,26 @@ void ControlMotors(float filteredSignal, float sensorReadings[]) {
 
 }
 
-float getCurrentThreshold(bool overdrawn[]) {
+float _getCurrentThreshold(bool overdrawn[]) {
+  /*
+      - Function:
+          - Calculates current threshold value based on number of stalled motors
+      - Arguments:
+          - overdrawn: array of booleans that signify if a motor is overdrawn
+      - Returns:
+          - float: threshold value
+  */
 
   int numStalled = 0;
   for (int i = 0; i < sizeof(overdrawn) - 1; i++) {
-    if (overdrawn[i]) {
-      numStalled++;
-    }
+      if (overdrawn[i]) {
+          numStalled++;
+      }
   }
 
-  Serial.println("Current Threshold = " + String(460 - (35 * numStalled)));
+  float threshold = 460 - (35 * numStalled);
 
-  return 460 - (35 * numStalled);
+  Serial.println("Current Treshold = " + String(threshold));
+
+  return threshold;
 }
