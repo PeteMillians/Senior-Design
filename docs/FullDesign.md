@@ -5,7 +5,7 @@ The following outlines the full design of the EMG-Data Acquisition System
 ### Hardware Components
 - [MyoWare EMG Sensor](https://myoware.com/products/muscle-sensor/)
 - [Arduino R3](https://store.arduino.cc/products/arduino-uno-rev3?srsltid=AfmBOoomeKbo_HNUKn9RDlytncmMrz4883O9ouOAUkNsl1cv23ON0Frv)
-- [DC Motors](https://www.amazon.com/Digital-Torque-Steering-Robotic-Control/dp/B0DDKN9RS6/ref=asc_df_B0DDKN9RS6?mcid=8a7d3cbd0a3f3dbdb4df0fa0b9d7d1ff&hvocijid=17958248276755884640-B0DDKN9RS6-&hvexpln=73&tag=hyprod-20&linkCode=df0&hvadid=721245378154&hvpos=&hvnetw=g&hvrand=17958248276755884640&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9011246&hvtargid=pla-2281435177898&th=1)
+- [DC Motors](https://www.amazon.com/dp/B01HSX1IDE?ref_=pe_125775000_1044873430_fed_asin_title&th=1)
 - [Current Sensors](https://www.amazon.com/UMLIFE-Current-Detector-ACS712ELC-Amperage/dp/B091Y2V3G7/ref=sr_1_3?crid=2GNTWDOA85J0T&dib=eyJ2IjoiMSJ9.HvV2KPdhpyWtyjpRALJ3Fpp49_pw1VTcM1XHHkJBAtO-_PWY10_1SwhYdlYyqdmc6atqoxZF1yk9jfqKa3aVZ1lW3cL-YOpTfPSJPNjuQK8ToR8xdledTNkGTZ_TY2YGjuh107X2Q-EDJL0wbI4ejA0Gpxhq1b_kgqv4oHzK9Mih0tAa8M4q04ujikwtWnNjGIhGrOw1O6p9ADx1295kwDXA3iVdUS-pOshkPvUvMLc.dvBSNYpFSS1BlTdt5PKDdTZYYx2TcMC_nDATcuPRotI&dib_tag=se&keywords=acs712%2Bcurrent%2Bsensor&qid=1737063190&sprefix=ACS712%2Caps%2C121&sr=8-3&th=1)
 - [5V Battery](https://www.amazon.com/Batteries-RECHARGED-Wireless-Security-Flashlights/dp/B09KRW2W4T/ref=sxin_16_pa_sp_search_thematic_sspa?content-id=amzn1.sym.c5787da2-212d-48eb-a894-9ea5a87adeb3%3Aamzn1.sym.c5787da2-212d-48eb-a894-9ea5a87adeb3&crid=2ITUI25C1QMEC&cv_ct_cx=rechargeable+7V+batteries&keywords=rechargeable+7V+batteries&pd_rd_i=B09KRW2W4T&pd_rd_r=254d4f8e-7674-44bc-9cca-4e4146c912a6&pd_rd_w=rN62y&pd_rd_wg=TUASP&pf_rd_p=c5787da2-212d-48eb-a894-9ea5a87adeb3&pf_rd_r=XAHVEKC90NSXBJY85MG6&qid=1738699698&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sprefix=rechargeable+7v+batterie%2Caps%2C117&sr=1-2-6024b2a3-78e4-4fed-8fed-e1613be3bcce-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9zZWFyY2hfdGhlbWF0aWM&psc=1)
 
@@ -63,8 +63,8 @@ The following outlines the full design of the EMG-Data Acquisition System
         - float: the value read from the pin as a float
 
 ### Design Components
-- [Digital Filter](FilterDesign.md)
-- [Control Algorithm](ControlAlgorithmDesign.md)
+- [Digital Filter](https://github.com/PeteMillians/Senior-Design/blob/Add-Design/docs/FilterDesign.md)
+- [Control Algorithm](https://github.com/PeteMillians/Senior-Design/blob/Add-Design/docs/ControlAlgorithmDesign.md)
 
 ## Algorithm
 
