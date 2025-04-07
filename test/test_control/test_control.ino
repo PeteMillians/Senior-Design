@@ -175,4 +175,3 @@ void _UpdateHoldState(motor& currMotor, float filteredSignal) {
   currMotor.overdrawn++;  // Record that this motor has overdrawn current
   currMotor.servo.write(90);
 }
-
