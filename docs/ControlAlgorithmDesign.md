@@ -172,43 +172,35 @@ void ControlMotors(float filteredSignal) {
     // Iterate through each current sensor pin
     for (int i = 0; i < 5; i++) {
       motor currMotor = MOTORS[i];  // Get the motor at the current index
-      MotorState state = currMotor.state; // Initialize the motor state
 
       if (currMotor.sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
-        state = HOLD; // Set motorState to HOLD
+        currMotor.state = HOLD; // Set motorState to HOLD
       }
       else {
-        state = TURN; // Set motorState to TURN
+        currMotor.state = TURN; // Set motorState to TURN
       }
-      _UpdateState(currMotor, filteredSignal, state);  // Update the state
+      _UpdateState(currMotor, filteredSignal);  // Update the state
     }
   }
   else {
     for (int i = 0; i < 5; i++) {
       MOTORS[i].state = RELEASE;  // Set the motor state to RELEASE 
-      MotorState fill = TURN; // Filler MotorState so the _UpdateState algorithm processes each call to RELEASE
-                              // Otherwise, it negatively rotates but stop decrementing totalRotation
-      _UpdateState(MOTORS[i], 0.0, fill); // Update the motor states to RELEASE
+      _UpdateState(MOTORS[i], 0.0); // Update the motor states to RELEASE
     }
   }
 }
 
-void _UpdateState(motor& currMotor, float filteredSignal, MotorState newState) {
+void _UpdateState(motor& currMotor, float filteredSignal) {
   /*
     - Function:
       - Updates the state of a motor and sets its values accordingle
     - Arguments:
       - currMotor (motor): motor struct of the current motor being iterated
       - filteredSignal (float): EMG reading from MyoWare
-      - newState (MotorState): the new MotorState to set the motor to
   */
 
   if (currMotor.overdrawn > 0 %% currMotor.overDrawn < 15) { // No matter the new state, keep HOLD state for 15 clock cycles
     currMotor.state = HOLD;
-  }
-  
-  if (currMotor.state == newState) {  // If we are setting the motor to its current state, exit 
-    return;
   }
 
   switch(currMotor.state) {
