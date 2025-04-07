@@ -52,7 +52,7 @@ void setup() {
     Serial.begin(9600);  // Start serial communication
 
     // Iterate through each motor
-    for (int i = 0; i < 5; i++) 
+    for (int i = 0; i < NUM_MOTORS; i++) 
         MOTORS[i].attach(MOTOR_PINS[i]); // Attach motors to their output pins
     
 }
@@ -72,7 +72,7 @@ void loop() {
       Serial.println(" V");
   }
 
-  for (int i = 0; i < 5; i++)  {
+  for (int i = 0; i < NUM_MOTORS; i++)  {
       MOTORS[i].sensorReadings = ReadInput(CURRENT_PINS[i]); // Read current sensor pins 
       if (DEBUG) {
           Serial.print("Sensor Reading for");
