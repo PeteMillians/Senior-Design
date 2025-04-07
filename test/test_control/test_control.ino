@@ -49,7 +49,7 @@ void loop() {
 
   ControlMotors(filteredSignal);  // Send EMG signal to motor control algorithm
 
-  delay(100);
+  delay(2000);  // 2 sec delay for testing
 }
 
 void ControlMotors(float filteredSignal) {
@@ -62,30 +62,34 @@ void ControlMotors(float filteredSignal) {
 
   // Check that the EMG signal is powering the motors
   if (filteredSignal > SIGNAL_THRESHOLD) {
+    Serial.println("EMG Signal above threshold");
 
     // Iterate through each current sensor pin
     for (int i = 0; i < 5; i++) {
       motor currMotor = MOTORS[i];  // Get the motor at the current index
-      MotorState state = currMotor.state; // Initialize the motor state
 
+      Serial.println("CurrentSensor from motor " + String(i + 1) + " = " + String(currMotor.sensorReading) + "; CURRENT_THRESHOLD = " + String(CURRENT_THRESHOLD));
       if (currMotor.sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
-        state = HOLD; // Set motorState to HOLD
+        Serial.println("Updating motor " + String(i + 1) + " to HOLD state");
+        currMotor.state = HOLD; // Set motorState to HOLD
       }
       else {
-        state = TURN; // Set motorState to TURN
+        Serial.println("Updating motor " + String(i + 1) + " to TURN state");
+        currMotor.state = TURN; // Set motorState to TURN
       }
-      _UpdateState(currMotor, filteredSignal, state);  // Update the state
+      _UpdateState(currMotor, filteredSignal);  // Update the state
     }
   }
   else {
     for (int i = 0; i < 5; i++) {
-      MOTORS[i].state = RELEASE;
-      _UpdateState(MOTORS[i], 0.0, MOTORS[i].state);
+      Serial.println("Updating motor " + String(i + 1) + " to RELEASE state");
+      MOTORS[i].state = RELEASE;  // Set the motor state to RELEASE 
+      _UpdateState(MOTORS[i], 0.0); // Update the motor states to RELEASE
     }
   }
 }
 
-void _UpdateState(motor& currMotor, float filteredSignal, MotorState newState) {
+void _UpdateState(motor& currMotor, float filteredSignal) {
   /*
     - Function:
       - Updates the state of a motor and sets its values accordingle
@@ -96,10 +100,6 @@ void _UpdateState(motor& currMotor, float filteredSignal, MotorState newState) {
 
   if (currMotor.overdrawn > 0 %% currMotor.overDrawn < 15) { // No matter the new state, keep HOLD state for 15 clock cycles
     currMotor.state = HOLD;
-  }
-  
-  if (currMotor.state == newState) {  // If we are setting the motor to its current state, exit 
-    return;
   }
 
   switch(currMotor.state) {
