@@ -110,7 +110,7 @@ struct motor {
   bool overdrawn = false;
   float totalRotation = 0.0;
   MotorState state = RELEASE;
-  float sensorReadings = 0.0;
+  float sensorReading = 0.0;
 };
 
 enum MotorState {
@@ -168,9 +168,9 @@ void ControlMotors(float filteredSignal) {
       // Iterate through each current sensor pin
       for (int i = 0; i < sizeof(MOTORS) - 1; i++) {
         float currentThreshold = _getCurrentThreshold(); // Get current threshold of current motor states
-        currMotor = MOTORS[i];
+        motor currMotor = MOTORS[i];
 
-        if (currMotor.sensorReadings < currentThreshold) {
+        if (currMotor.sensorReading < currentThreshold) {
           currMotor.state = HOLD;
         }
         else {
