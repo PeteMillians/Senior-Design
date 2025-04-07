@@ -35,7 +35,7 @@ const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
 motor MOTORS[5];
 
 /* Thresholds */
-const float CURRENT_THRESHOLD = 470;   // Current threshold level 
+const float CURRENT_THRESHOLD = -1;   // Unatainable current threshold level (allows for future implementation)
 const float SIGNAL_THRESHOLD = 6.15;   // Voltage threshold level 
 
 /* Global variables */  
@@ -43,7 +43,7 @@ const float RELEASE_STEP = 20.0; // constant for how much the totalRotation will
 const int NUM_MOTORS = 5;
 
 /* Testing Variable */
-bool DEBUG = true;
+bool DEBUG = false;
 
 /* Sampling Frequency */
 const int CLOCK_PERIOD = 500;   // 500 us (2kHz sampling frequency)
@@ -76,10 +76,8 @@ void loop() {
 
   if (DEBUG) 
     delay(500);
-  
   else 
     delayMicroseconds(CLOCK_PERIOD); // 2kHz sampling frequency (500 us)
-  
 }
 
 float ReadInput(int pinNumber) {
@@ -115,7 +113,6 @@ Pair _TryReadInput(int pinNumber) {
   
   Pair input(false, 0.0);
 
-  // float value = (analogRead(pinNumber) / 1023.0) * 5.0; // Input value in Volts
   float value = analogRead(pinNumber);
 
   input.success = true;  
@@ -184,13 +181,12 @@ void ControlMotors(float filteredSignal) {
 
     // Iterate through each current sensor pin
     for (int i = 0; i < NUM_MOTORS; i++) {
-      // if (MOTORS[i].sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
-      //   MOTORS[i].state = HOLD; // Set motorState to HOLD
-      //   Serial.println("Motor " + String(i + 1) + " set to HOLD");
-      // }
-      // else {
+      if (MOTORS[i].sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
+        MOTORS[i].state = HOLD; // Set motorState to HOLD
+      }
+      else {
         MOTORS[i].state = TURN; // Set motorState to TURN
-      // }
+      }
       _UpdateState(MOTORS[i], filteredSignal);  // Update the state
     }
   }
@@ -220,7 +216,7 @@ void _UpdateState(motor& currMotor, float filteredSignal) {
       _UpdateTurnState(currMotor, filteredSignal);
       break;
     case (HOLD):
-      // _UpdateHoldState(currMotor, filteredSignal);
+      _UpdateHoldState(currMotor, filteredSignal);
       break;
     case (RELEASE):
       _UpdateReleaseState(currMotor, filteredSignal);
@@ -283,8 +279,6 @@ void _UpdateHoldState(motor& currMotor, float filteredSignal) {
       - currMotor (motor): the current motor we are iterating through
       - filteredSignal (float): the EMG signal from the MyoWare sensor
   */
-
-  // TODO: Need logic here to keep it stopped when stalled but not stop others
 
   currMotor.overdrawn++;  // Increment overdrawn current
   currMotor.servo.write(90);  // Write no movement to the motor
