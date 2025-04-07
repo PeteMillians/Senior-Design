@@ -10,6 +10,13 @@ struct Pair {
   Pair(bool s, float d) : success(s), data(d) {}
 };
 
+/* Enum Definition */
+enum MotorState {
+  TURN,
+  RELEASE,
+  HOLD
+};
+
 struct motor {
   Servo servo;
   int overdrawn = 0;
@@ -18,12 +25,6 @@ struct motor {
   float sensorReading = 0.0;
 };
 
-/* Enum Definition */
-enum MotorState {
-  TURN,
-  RELEASE,
-  HOLD
-};
 
 /* Pin Connections */
 const int EMG_PIN = A0;
@@ -31,10 +32,10 @@ const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
 
 /* Motors */
-const motor MOTORS[5];
+motor MOTORS[5];
 
 /* Thresholds */
-const float CURRENT_THRESHOLD = 538.5;   // Current threshold level 
+const float CURRENT_THRESHOLD = 470;   // Current threshold level 
 const float SIGNAL_THRESHOLD = 6.15;   // Voltage threshold level 
 
 /* Global variables */  
@@ -42,7 +43,7 @@ const float RELEASE_STEP = 20.0; // constant for how much the totalRotation will
 const int NUM_MOTORS = 5;
 
 /* Testing Variable */
-bool DEBUG = false;
+bool DEBUG = true;
 
 /* Sampling Frequency */
 const int CLOCK_PERIOD = 500;   // 500 us (2kHz sampling frequency)
@@ -53,39 +54,32 @@ void setup() {
 
     // Iterate through each motor
     for (int i = 0; i < NUM_MOTORS; i++) 
-        MOTORS[i].attach(MOTOR_PINS[i]); // Attach motors to their output pins
+        MOTORS[i].servo.attach(MOTOR_PINS[i]); // Attach motors to their output pins
     
 }
 
 void loop() {
   float rawSignal = ReadInput(EMG_PIN);   // Read raw data from MyoWare EMG Sensor
-  if (DEBUG) {
-      Serial.print("Raw Signal = ");
-      Serial.print(rawSignal);
-      Serial.println(" V");
-  }
-
   float filteredSignal = Filter(rawSignal);   // Filter raw signal
   if (DEBUG) {
-      Serial.print("Filtered Signal = ");
-      Serial.print(filteredSignal);
-      Serial.println(" V");
+      Serial.println(String(rawSignal) + " " + String(filteredSignal));
   }
 
   for (int i = 0; i < NUM_MOTORS; i++)  {
-      MOTORS[i].sensorReadings = ReadInput(CURRENT_PINS[i]); // Read current sensor pins 
+      MOTORS[i].sensorReading = ReadInput(CURRENT_PINS[i]); // Read current sensor pins 
       if (DEBUG) {
           Serial.print("Sensor Reading for");
           Serial.print(i + 1);
           Serial.print(" = ");
-          Serial.print(MOTORS[i].sensorReadings);
-          Serial.println(" A");
+          Serial.println(MOTORS[i].sensorReading);
       }
   }
 
   ControlMotors(filteredSignal);  // Control motors using filtered signal and current sensor readings
 
-  delayMicroseconds(CLOCK_PERIOD); // 2kHz sampling frequency (500 us)
+  delay(500);
+
+  // delayMicroseconds(CLOCK_PERIOD); // 2kHz sampling frequency (500 us)
 }
 
 float ReadInput(int pinNumber) {
@@ -245,7 +239,7 @@ void _UpdateTurnState(motor& currMotor, float filteredSignal) {
   // Set to turn state
   currMotor.overdrawn = 0;  // Reset overdrawn counter
 
-  float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a positive rotation
+  float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 80, 91, 120), 91, 120);    // Map signal to a positive rotation
 
   currMotor.servo.write(rotation);  // Send rotation signal to the servo
 
