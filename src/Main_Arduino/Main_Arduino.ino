@@ -54,7 +54,7 @@ void setup() {
 
     // Iterate through each motor
     for (int i = 0; i < NUM_MOTORS; i++) 
-        MOTORS[i].servo.attach(MOTOR_PINS[i]); // Attach motors to their output pins
+      MOTORS[i].servo.attach(MOTOR_PINS[i]); // Attach motors to their output pins
     
 }
 
@@ -62,24 +62,24 @@ void loop() {
   float rawSignal = ReadInput(EMG_PIN);   // Read raw data from MyoWare EMG Sensor
   float filteredSignal = Filter(rawSignal);   // Filter raw signal
   if (DEBUG) {
-      Serial.println(String(rawSignal) + " " + String(filteredSignal));
+    Serial.println(String(rawSignal) + " " + String(filteredSignal));
   }
 
   for (int i = 0; i < NUM_MOTORS; i++)  {
       MOTORS[i].sensorReading = ReadInput(CURRENT_PINS[i]); // Read current sensor pins 
-      if (DEBUG) {
-          Serial.print("Sensor Reading for");
-          Serial.print(i + 1);
-          Serial.print(" = ");
-          Serial.println(MOTORS[i].sensorReading);
-      }
+      if (DEBUG) 
+        Serial.println("Sensor Reading for " + String(i + 1) + " = " + String(MOTORS[i].sensorReading));
+      
   }
 
   ControlMotors(filteredSignal);  // Control motors using filtered signal and current sensor readings
 
-  delay(500);
-
-  // delayMicroseconds(CLOCK_PERIOD); // 2kHz sampling frequency (500 us)
+  if (DEBUG) 
+    delay(500);
+  
+  else 
+    delayMicroseconds(CLOCK_PERIOD); // 2kHz sampling frequency (500 us)
+  
 }
 
 float ReadInput(int pinNumber) {
@@ -186,6 +186,7 @@ void ControlMotors(float filteredSignal) {
     for (int i = 0; i < NUM_MOTORS; i++) {
       if (MOTORS[i].sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
         MOTORS[i].state = HOLD; // Set motorState to HOLD
+        Serial.println("Motor " + String(i + 1) + " set to HOLD");
       }
       else {
         MOTORS[i].state = TURN; // Set motorState to TURN
@@ -239,7 +240,7 @@ void _UpdateTurnState(motor& currMotor, float filteredSignal) {
   // Set to turn state
   currMotor.overdrawn = 0;  // Reset overdrawn counter
 
-  float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 80, 91, 120), 91, 120);    // Map signal to a positive rotation
+  float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 40, 91, 120), 91, 120);    // Map signal to a positive rotation
 
   currMotor.servo.write(rotation);  // Send rotation signal to the servo
 
