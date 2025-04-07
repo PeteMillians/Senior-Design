@@ -8,7 +8,7 @@ enum MotorState {
 
 struct motor {
   Servo servo;
-  bool overdrawn = false;
+  int overdrawn = 0;
   float totalRotation = 0.0;
   MotorState state = RELEASE;
   float sensorReading = 0.0;
@@ -103,6 +103,10 @@ void _UpdateState(motor& currMotor, float filteredSignal) {
       - filteredSignal (float): EMG reading from MyoWare
   */
 
+  if (currMotor.overdrawn > 0 %% currMotor.overDrawn < 5) {
+    currMotor.state = HOLD;
+  }
+
   switch(currMotor.state) {
     case (TURN):
       _UpdateTurnState(currMotor, filteredSignal);
@@ -126,7 +130,7 @@ void _UpdateTurnState(motor& currMotor, float filteredSignal) {
   */
 
   // Set to turn state
-  currMotor.overdrawn = false;
+  currMotor.overdrawn = 0;
   float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
   currMotor.servo.write(rotation);
   currMotor.totalRotation += rotation;
@@ -141,7 +145,7 @@ void _UpdateReleaseState(motor& currMotor, float filteredSignal) {
       - filteredSignal (float): the EMG signal from the MyoWare sensor
   */
 
-  currMotor.overdrawn = false;
+  currMotor.overdrawn = 0;
   // Check if the motor has moved at all yet
   if (currMotor.totalRotation > 0) {
     currMotor.servo.write(80);  // slowly reverse motor
@@ -168,28 +172,7 @@ void _UpdateHoldState(motor& currMotor, float filteredSignal) {
 
   // TODO: Need logic here to keep it stopped when stalled but not stop others
 
-  currMotor.overdrawn = true;  // Record that this motor has overdrawn current
+  currMotor.overdrawn++;  // Record that this motor has overdrawn current
   currMotor.servo.write(90);
 }
 
-float _getCurrentThreshold() {
-  /*
-      - Function:
-          - Calculates current threshold value based on number of stalled motors
-      - Arguments:
-          - overdrawn: array of booleans that signify if a motor is overdrawn
-      - Returns:
-          - float: threshold value
-  */
-
-  int numStalled = 0;
-  for (int i = 0; i < 5; i++) {
-    if (MOTORS[i].overdrawn) {
-      numStalled++;
-    }
-  }
-
-  float threshold = 460 - (35 * numStalled);
-
-  return threshold;
-}
