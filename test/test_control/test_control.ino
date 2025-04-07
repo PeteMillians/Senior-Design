@@ -73,7 +73,7 @@ void ControlMotors(float filteredSignal) {
   if (filteredSignal > SIGNAL_THRESHOLD) {
 
     // Iterate through each current sensor pin
-    for (int i = 0; i < sizeof(MOTORS) - 1; i++) {
+    for (int i = 0; i < 5; i++) {
       float currentThreshold = _getCurrentThreshold(); // Get current threshold of current motor states
       motor currMotor = MOTORS[i];
 
@@ -87,54 +87,89 @@ void ControlMotors(float filteredSignal) {
     }
   }
   else {
-    for (int i = 0; i < sizeof(MOTORS) - 1; i++) {
+    for (int i = 0; i < 5; i++) {
       MOTORS[i].state = RELEASE;
       _UpdateState(MOTORS[i], 0.0);
     }
   }
 }
 
-void _UpdateState(motor currMotor, float filteredSignal) {
-/*
-  - Function:
-    - Updates the state of a motor and sets its values accordingle
-  - Arguments:
-    - currMotor (motor): motor struct of the current motor being iterated
-    - filteredSignal (float): EMG reading from MyoWare
-*/
+void _UpdateState(motor& currMotor, float filteredSignal) {
+  /*
+    - Function:
+      - Updates the state of a motor and sets its values accordingle
+    - Arguments:
+      - currMotor (motor): motor struct of the current motor being iterated
+      - filteredSignal (float): EMG reading from MyoWare
+  */
 
-switch(currMotor.state) {
-  case (TURN):
-    // Set to turn state
-    currMotor.overdrawn = false;
-    float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
-    currMotor.servo.write(rotation);
-    currMotor.totalRotation += rotation;    
-    break;
-  case (HOLD):
-    // TODO: Need logic here to keep it stopped when stalled but not stop others
-
-    currMotor.overdrawn = true;  // Record that this motor has overdrawn current
-    currMotor.servo.write(90);
-    break;
-  case (RELEASE):
-    // Release state
-    currMotor.overdrawn = false;
-    // Check if the motor has moved at all yet
-    if (currMotor.totalRotation > 0) {
-      currMotor.servo.write(80);  // slowly reverse motor
-      currMotor.totalRotation -= RELEASE_STEP;  // arbitrary value (requires testing)
-
-      if (currMotor.totalRotation <= 0) { // once the motor has gotten to its return state
-        currMotor.totalRotation = 0;
-        currMotor.servo.write(90);  // stop movement
-      }
-    } 
-    else {
-      currMotor.servo.write(90);  // already at original position, stop
-    }
-    break;
+  switch(currMotor.state) {
+    case (TURN):
+      _UpdateTurnState(currMotor, filteredSignal);
+      break;
+    case (HOLD):
+      _UpdateHoldState(currMotor, filteredSignal);
+      break;
+    case (RELEASE):
+      _UpdateReleaseState(currMotor, filteredSignal);
+      break;
+  }
 }
+
+void _UpdateTurnState(motor& currMotor, float filteredSignal) {
+  /*
+    - Function:
+      - Updates the currMotor to the TURN state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+  */
+
+  // Set to turn state
+  currMotor.overdrawn = false;
+  float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
+  currMotor.servo.write(rotation);
+  currMotor.totalRotation += rotation;
+}
+
+void _UpdateReleaseState(motor& currMotor, float filteredSignal) {
+  /*
+    - Function:
+      - Updates the currMotor to the RELEASE state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+  */
+
+  currMotor.overdrawn = false;
+  // Check if the motor has moved at all yet
+  if (currMotor.totalRotation > 0) {
+    currMotor.servo.write(80);  // slowly reverse motor
+    currMotor.totalRotation -= RELEASE_STEP;  // arbitrary value (requires testing)
+
+    if (currMotor.totalRotation <= 0) { // once the motor has gotten to its return state
+      currMotor.totalRotation = 0;
+      currMotor.servo.write(90);  // stop movement
+    }
+  } 
+  else {
+    currMotor.servo.write(90);  // already at original position, stop
+  }
+}
+
+void _UpdateHoldState(motor& currMotor, float filteredSignal) {
+  /*
+    - Function:
+      - Updates the currMotor to the HOLD state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+  */
+
+  // TODO: Need logic here to keep it stopped when stalled but not stop others
+
+  currMotor.overdrawn = true;  // Record that this motor has overdrawn current
+  currMotor.servo.write(90);
 }
 
 float _getCurrentThreshold() {
@@ -148,7 +183,7 @@ float _getCurrentThreshold() {
   */
 
   int numStalled = 0;
-  for (int i = 0; i < sizeof(MOTORS) - 1; i++) {
+  for (int i = 0; i < 5; i++) {
     if (MOTORS[i].overdrawn) {
       numStalled++;
     }

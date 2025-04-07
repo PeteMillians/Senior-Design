@@ -58,23 +58,26 @@ myServo.write(rotation speed between 0 and 90)
     - currMotor (motor): motor struct of the current motor being iterated
     - sensorReading (float): current-sensor reading of this specific motor
     
-- ***int _getStallIndex(float sensorReadings[], bool overdrawn[], float currentThreshold)***
-  - Function:
-    - Iterate through sensors and motors to find which one is stalled
-  - Arguments:
-    - sensorReadings (floats): array of current-sensor values
-    - overdrawn (bools): array of booleans that signify if a motor is overdrawn
-    - currentThreshold (float): the minimum current that the sensorReadings must be for the motor to not be stalled
-  - Returns:
-    - An int value between 0 and the number of motors - 1 which symbolizes the index of the stalled motor
-
-- ***float _getCurrentThreshold(bool overdrawn[])***
+- ***void _UpdateTurnState(motor& currMotor, float filteredSignal)***
     - Function:
-        - Calculates current threshold value based on number of stalled motors
+      - Updates the currMotor to the TURN state
     - Arguments:
-        - overdrawn (bools): array of booleans that signify if a motor is overdrawn
-    - Returns:
-        - float: threshold value
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+
+- ***void _UpdateHoldState(motor& currMotor, float filteredSignal)***
+    - Function:
+      - Updates the currMotor to the HOLD state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+
+- ***void _UpdateReleaseState(motor& currMotor, float filteredSignal)***
+    - Function:
+      - Updates the currMotor to the RELEASE state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
 
 ## Testing
 
@@ -84,13 +87,12 @@ To test the Control Motor algorithm, we will copy the algorithm show below, fill
 
 float filteredSignal = float(rand() % 10) / 100;   // Random number between 0 and .09
 
-float currentReadings[5];
 
 for (int i = 0; i < 5; i++) {
-    currentReadings[i] = analogRead(CURRENT_PINS[i]);
+    motor[i].currentReadings = analogRead(CURRENT_PINS[i]);
 }
 
-ControlMotors(filteredSignal, currentReadings);
+ControlMotors(filteredSignal);
 
 ```
 
@@ -116,6 +118,7 @@ enum MotorState {
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
 const float SIGNAL_THRESHOLD = 6.1;   // Example voltage threshold level in range (0 : 1023)
+const float CURRENT_THRESHOLD = 460;   // Example voltage threshold level in range (0 : 1023)
 const motor MOTORS[5];
 const float RELEASE_STEP = 20.0; // constant for how much the totalRotation will decrement each clock cycle during release
 
@@ -166,11 +169,10 @@ void ControlMotors(float filteredSignal) {
     if (filteredSignal > SIGNAL_THRESHOLD) {
 
       // Iterate through each current sensor pin
-      for (int i = 0; i < sizeof(MOTORS) - 1; i++) {
-        float currentThreshold = _getCurrentThreshold(); // Get current threshold of current motor states
+      for (int i = 0; i < 5; i++) {
         motor currMotor = MOTORS[i];
 
-        if (currMotor.sensorReading < currentThreshold) {
+        if (currMotor.sensorReading < CURRENT_THRESHOLD) {
           currMotor.state = HOLD;
         }
         else {
@@ -180,14 +182,14 @@ void ControlMotors(float filteredSignal) {
       }
     }
     else {
-      for (int i = 0; i < sizeof(MOTORS) - 1; i++) {
+      for (int i = 0; i < 5; i++) {
         MOTORS[i].state = RELEASE;
         _UpdateState(MOTORS[i], 0.0);
       }
     }
 }
 
-void _UpdateState(motor currMotor, float filteredSignal) {
+void _UpdateState(motor& currMotor, float filteredSignal) {
   /*
     - Function:
       - Updates the state of a motor and sets its values accordingle
@@ -198,39 +200,73 @@ void _UpdateState(motor currMotor, float filteredSignal) {
 
   switch(currMotor.state) {
     case (TURN):
-      // Set to turn state
-      currMotor.overdrawn = false;
-      float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
-      currMotor.servo.write(rotation);
-      currMotor.rotation += rotation;    
+      _UpdateTurnState(currMotor, filteredSignal);
       break;
-
     case (HOLD):
-      //TODO: Need logic here to keep motor stopped when stalled and not stop any others
-
-      currMotor.overdrawn = true;  // Record that this motor has overdrawn current
-      currMotor.servo.write(90);
+      _UpdateHoldState(currMotor, filteredSignal);
       break;
-
     case (RELEASE):
-      // Release state
-      currMotor.overdrawn = false;
-      // Check if the motor has moved at all yet
-      if (currMotor.totalRotation > 0) {
-        currMotor.servo.write(80);  // slowly reverse motor
-        currMotor.totalRotation -= RELEASE_STEP;  // arbitrary value (requires testing)
-
-        if (currMotor.totalRotation <= 0) { // once the motor has gotten to its return state
-          currMotor.totalRotation = 0;
-          currMotor.servo.write(90);  // stop movement
-        }
-      } 
-      else {
-        currMotor.servo.write(90);  // already at original position, stop
-      }
+      _UpdateReleaseState(currMotor, filteredSignal);
       break;
   }
 }
+
+void _UpdateTurnState(motor& currMotor, float filteredSignal) {
+  /*
+    - Function:
+      - Updates the currMotor to the TURN state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+  */
+
+  // Set to turn state
+  currMotor.overdrawn = false;
+  float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
+  currMotor.servo.write(rotation);
+  currMotor.totalRotation += rotation;
+}
+
+void _UpdateReleaseState(motor& currMotor, float filteredSignal) {
+  /*
+    - Function:
+      - Updates the currMotor to the RELEASE state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+  */
+
+  currMotor.overdrawn = false;
+  // Check if the motor has moved at all yet
+  if (currMotor.totalRotation > 0) {
+    currMotor.servo.write(80);  // slowly reverse motor
+    currMotor.totalRotation -= RELEASE_STEP;  // arbitrary value (requires testing)
+
+    if (currMotor.totalRotation <= 0) { // once the motor has gotten to its return state
+      currMotor.totalRotation = 0;
+      currMotor.servo.write(90);  // stop movement
+    }
+  } 
+  else {
+    currMotor.servo.write(90);  // already at original position, stop
+  }
+}
+
+void _UpdateHoldState(motor& currMotor, float filteredSignal) {
+  /*
+    - Function:
+      - Updates the currMotor to the HOLD state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+  */
+
+  // TODO: Need logic here to keep it stopped when stalled but not stop others
+
+  currMotor.overdrawn = true;  // Record that this motor has overdrawn current
+  currMotor.servo.write(90);
+}
+
 
 float _getCurrentThreshold() {
     /*
@@ -243,7 +279,7 @@ float _getCurrentThreshold() {
     */
 
     int numStalled = 0;
-    for (int i = 0; i < sizeof(MOTORS) - 1; i++) {
+    for (int i = 0; i < 5; i++) {
       if (MOTORS[i].overdrawn) {
         numStalled++;
       }
@@ -253,29 +289,4 @@ float _getCurrentThreshold() {
 
     return threshold;
 }
-
-// int _getStallIndex(float sensorReadings[], float currentThreshold) {
-//   /*
-//     - Function:
-//       - Iterate through sensors and motors to find which one is stalled
-//     - Arguments:
-//       - sensorReadings (floats): array of current-sensor values
-//       - overdrawn (bools): array of booleans that signify if a motor is overdrawn
-//       - currentThreshold (float): the minimum current that the sensorReadings must be for the motor to not be stalled
-//     - Returns:
-//       - An int value between 0 and the number of motors - 1 which symbolizes the index of the stalled motor
-//   */
-  
-//   int stallIndex = -1;    // Initialize stallIndex out of range
-//   float maxCurrent = -9999;
-
-//   for (int i = 0; i < 5; i++) {
-//     if (sensorReadings[i] > maxCurrent && sensorReadings[i] < currentThreshold && !MOTORS[i].overdrawn) {  // Find highest current who is under threshold and isn't already stalled
-//       maxCurrent = sensorReadings[i]; // Update max current
-//       stallIndex = i; // Find index of stalled motor
-//     }
-//   }
-
-//   return stallIndex;
-// }
 ```
