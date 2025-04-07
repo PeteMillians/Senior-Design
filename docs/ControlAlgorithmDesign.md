@@ -110,7 +110,7 @@ struct motor {
   bool overdrawn = false;
   float totalRotation = 0.0;
   MotorState state = RELEASE;
-  float currentSensor = 0.0;
+  float sensorReadings = 0.0;
 };
 
 enum MotorState {
@@ -150,17 +150,16 @@ void loop() {
 
     /* Read current sensor pins */
 
-    ControlMotors(filteredSignal, sensorReadings);
+    ControlMotors(filteredSignal);
 
 }
 
-void ControlMotors(float filteredSignal, float sensorReadings[]) {
+void ControlMotors(float filteredSignal) {
     /*
     - Function:
         - Full control algorithm for motors
     - Arguments:
         - filteredSignal (float): Filtered EMG data
-        - sensorReadings (floats): Current sensor readings
     */ 
 
     // Check that the EMG signal is powering the motors
