@@ -97,13 +97,6 @@ ControlMotors(filteredSignal, currentReadings);
 ## Algorithm
 
 ```c++
-/* Constants declared in header */
-const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
-const int MOTOR_PINS[5] = {9, 10, 11, 12, 13};
-// const float CURRENT_THRESHOLD = 450;   // Example current threshold level in range (0 : 1023)
-const float SIGNAL_THRESHOLD = 6.1;   // Example voltage threshold level in range (0 : 1023)
-const motor MOTORS[5];
-const float RELEASE_STEP = 20.0; // constant for how much the totalRotation will decrement each clock cycle during release
 
 struct motor {
   Servo servo;
@@ -118,6 +111,13 @@ enum MotorState {
   RELEASE,
   HOLD
 };
+
+/* Constants declared in header */
+const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
+const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
+const float SIGNAL_THRESHOLD = 6.1;   // Example voltage threshold level in range (0 : 1023)
+const motor MOTORS[5];
+const float RELEASE_STEP = 20.0; // constant for how much the totalRotation will decrement each clock cycle during release
 
 .
 .
@@ -204,16 +204,14 @@ void _UpdateState(motor currMotor, float filteredSignal) {
       currMotor.servo.write(rotation);
       currMotor.rotation += rotation;    
       break;
-    case (HOLD):
-      // int stallIndex = _getStallIndex(currMotor.sensorReading, currentThreshold);
 
-      // // // If this index isn't the stalled one, keep moving
-      // if (stallIndex == -1) {
-      //   break;
-      // }
+    case (HOLD):
+      //TODO: Need logic here to keep motor stopped when stalled and not stop any others
+
       currMotor.overdrawn = true;  // Record that this motor has overdrawn current
       currMotor.servo.write(90);
       break;
+
     case (RELEASE):
       // Release state
       currMotor.overdrawn = false;

@@ -112,12 +112,8 @@ switch(currMotor.state) {
     currMotor.totalRotation += rotation;    
     break;
   case (HOLD):
-    // int stallIndex = _getStallIndex(currMotor.sensorReading, currentThreshold);
+    // TODO: Need logic here to keep it stopped when stalled but not stop others
 
-    // // // If this index isn't the stalled one, keep moving
-    // if (stallIndex == -1) {
-    //   break;
-    // }
     currMotor.overdrawn = true;  // Record that this motor has overdrawn current
     currMotor.servo.write(90);
     break;
