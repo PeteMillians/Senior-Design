@@ -16,6 +16,7 @@ struct motor {
 
 /* Constants declared in header */
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
+const int NUM_MOTORS = 5;
 const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
 const float CURRENT_THRESHOLD = 450;   // Example current threshold 
 const float SIGNAL_THRESHOLD = 6.1;   // Example voltage threshold
@@ -66,18 +67,16 @@ void ControlMotors(float filteredSignal) {
 
     // Iterate through each current sensor pin
     for (int i = 0; i < 5; i++) {
-      motor currMotor = MOTORS[i];  // Get the motor at the current index
-
-      Serial.println("CurrentSensor from motor " + String(i + 1) + " = " + String(currMotor.sensorReading) + "; CURRENT_THRESHOLD = " + String(CURRENT_THRESHOLD));
-      if (currMotor.sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
+      Serial.println("CurrentSensor from motor " + String(i + 1) + " = " + String(MOTORS[i].sensorReading) + "; CURRENT_THRESHOLD = " + String(CURRENT_THRESHOLD));
+      if (MOTORS[i].sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
         Serial.println("Updating motor " + String(i + 1) + " to HOLD state");
-        currMotor.state = HOLD; // Set motorState to HOLD
+        MOTORS[i].state = HOLD; // Set motorState to HOLD
       }
       else {
         Serial.println("Updating motor " + String(i + 1) + " to TURN state");
-        currMotor.state = TURN; // Set motorState to TURN
+        MOTORS[i].state = TURN; // Set motorState to TURN
       }
-      _UpdateState(currMotor, filteredSignal);  // Update the state
+      _UpdateState(MOTORS[i], filteredSignal);  // Update the state
     }
   }
   else {
@@ -98,7 +97,7 @@ void _UpdateState(motor& currMotor, float filteredSignal) {
       - filteredSignal (float): EMG reading from MyoWare
   */
 
-  if (currMotor.overdrawn > 0 %% currMotor.overDrawn < 15) { // No matter the new state, keep HOLD state for 15 clock cycles
+  if (currMotor.overdrawn > 0 && currMotor.overdrawn < 15) { // No matter the new state, keep HOLD state for 15 clock cycles
     currMotor.state = HOLD;
   }
 
