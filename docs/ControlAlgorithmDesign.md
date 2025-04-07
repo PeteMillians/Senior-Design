@@ -261,32 +261,7 @@ void _UpdateHoldState(motor& currMotor, float filteredSignal) {
       - filteredSignal (float): the EMG signal from the MyoWare sensor
   */
 
-  // TODO: Need logic here to keep it stopped when stalled but not stop others
-
   currMotor.overdrawn = true;  // Record that this motor has overdrawn current
   currMotor.servo.write(90);
-}
-
-
-float _getCurrentThreshold() {
-    /*
-        - Function:
-            - Calculates current threshold value based on number of stalled motors
-        - Arguments:
-            - overdrawn: array of booleans that signify if a motor is overdrawn
-        - Returns:
-            - float: threshold value
-    */
-
-    int numStalled = 0;
-    for (int i = 0; i < 5; i++) {
-      if (MOTORS[i].overdrawn) {
-        numStalled++;
-      }
-    }
-
-    float threshold = 460 - (35 * numStalled);
-
-    return threshold;
 }
 ```
