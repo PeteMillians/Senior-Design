@@ -185,8 +185,10 @@ void ControlMotors(float filteredSignal) {
   }
   else {
     for (int i = 0; i < 5; i++) {
-      MOTORS[i].state = RELEASE;
-      _UpdateState(MOTORS[i], 0.0, MOTORS[i].state);
+      MOTORS[i].state = RELEASE;  // Set the motor state to RELEASE 
+      MotorState fill = TURN; // Filler MotorState so the _UpdateState algorithm processes each call to RELEASE
+                              // Otherwise, it negatively rotates but stop decrementing totalRotation
+      _UpdateState(MOTORS[i], 0.0, fill); // Update the motor states to RELEASE
     }
   }
 }
