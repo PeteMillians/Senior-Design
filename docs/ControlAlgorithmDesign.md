@@ -92,7 +92,7 @@ To test the Control Motor algorithm, we will copy the algorithm show below, fill
 float filteredSignal = float(rand() % 10) / 100;   // Random number between 0 and .09
 
 
-for (int i = 0; i < 5; i++) {
+for (int i = 0; i < NUM_MOTORS; i++) {
     motor[i].currentReadings = analogRead(CURRENT_PINS[i]);
 }
 
@@ -100,13 +100,17 @@ ControlMotors(filteredSignal);
 
 ```
 
+## Future Improvements
+
+After switching to the Continuous-Rotation Servo Motors, we lost the ability to track the displacement of the finger over time. This means that the RELEASE state is guessing how far to release. Implementing a Limit Switch would allow us to sense when the finger returns to its neutral position. However, without this component, the best we can do is guess. Additionally, future developments will need separate batteries for each motor-current-sensor loop. When a single motor stalls, the current of every motor is affected due to the limited power capable by the battery; therefore, the CURRENT_THRESHOLD level is only accurate for the first stall. After several attempts at designing a dynamic current threshold dependent on the number of stalled motors, we elected to truncate the independent finger feature and settle with dependent movement.
+
 ## Algorithm
 
 ```c++
 
 struct motor {
   Servo servo;
-  bool overdrawn = false;
+  int overdrawn = 0.0;
   float totalRotation = 0.0;
   MotorState state = RELEASE;
   float sensorReading = 0.0;
@@ -120,6 +124,7 @@ enum MotorState {
 
 /* Constants declared in header */
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
+const int NUM_MOTORS = 5;
 const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
 const float SIGNAL_THRESHOLD = 6.1;   // Example voltage threshold level in range (0 : 1023)
 const float CURRENT_THRESHOLD = 460;   // Example voltage threshold level in range (0 : 1023)
@@ -137,7 +142,7 @@ void setup() {
     .
 
     // Iterate through each motor
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < NUM_MOTORS; i++) {
         MOTORS[i].servo.attach(MOTOR_PINS[i]); // Attach motors to their output pins
     }
 
@@ -173,20 +178,18 @@ void ControlMotors(float filteredSignal) {
   if (filteredSignal > SIGNAL_THRESHOLD) {
 
     // Iterate through each current sensor pin
-    for (int i = 0; i < 5; i++) {
-      motor currMotor = MOTORS[i];  // Get the motor at the current index
-
-      if (currMotor.sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
-        currMotor.state = HOLD; // Set motorState to HOLD
+    for (int i = 0; i < NUM_MOTORS; i++) {
+      if (MOTORS[i].sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
+        MOTORS[i].state = HOLD; // Set motorState to HOLD
       }
       else {
-        currMotor.state = TURN; // Set motorState to TURN
+        MOTORS[i].state = TURN; // Set motorState to TURN
       }
-      _UpdateState(currMotor, filteredSignal);  // Update the state
+      _UpdateState(MOTORS[i], filteredSignal);  // Update the state
     }
   }
   else {
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < NUM_MOTORS; i++) {
       MOTORS[i].state = RELEASE;  // Set the motor state to RELEASE 
       _UpdateState(MOTORS[i], 0.0); // Update the motor states to RELEASE
     }
@@ -202,7 +205,7 @@ void _UpdateState(motor& currMotor, float filteredSignal) {
       - filteredSignal (float): EMG reading from MyoWare
   */
 
-  if (currMotor.overdrawn > 0 %% currMotor.overDrawn < 15) { // No matter the new state, keep HOLD state for 15 clock cycles
+  if (currMotor.overdrawn > 0 && currMotor.overdrawn < 15) { // No matter the new state, keep HOLD state for 15 clock cycles
     currMotor.state = HOLD;
   }
 
