@@ -2,40 +2,51 @@
 
 using namespace std;
 
+/* Struct Definitions */
+struct Pair {
+  bool success;
+  float data;
+
+  Pair(bool s, float d) : success(s), data(d) {}
+};
+
+struct motor {
+  Servo servo;
+  int overdrawn = 0;
+  float totalRotation = 0.0;
+  MotorState state = RELEASE;
+  float sensorReading = 0.0;
+};
+
+/* Enum Definition */
+enum MotorState {
+  TURN,
+  RELEASE,
+  HOLD
+};
+
 /* Pin Connections */
 const int EMG_PIN = A0;
 const int CURRENT_PINS[5] = {A1, A2, A3, A4, A5};
 const int MOTOR_PINS[5] = {3, 5, 6, 9, 11};
 
 /* Motors */
-const Servo MOTORS[5];
+const motor MOTORS[5];
 
 /* Thresholds */
-const int CURRENT_THRESHOLD = 538.5;   // Current threshold level 
+const float CURRENT_THRESHOLD = 538.5;   // Current threshold level 
 const float SIGNAL_THRESHOLD = 6.15;   // Voltage threshold level 
 
-/* Conversions */
-// const float sensorVoltageOffset = 2.5;  // For ACS712, it has a 2.5V offset for 0A current
-// const float sensorSensitivity = 0.066;  // ACS712 30A model (0.066V per Ampere)
-
 /* Global variables */  
-bool isOverdrawn[5] = {false, false, false, false, false};  // array of bools representing if that motor has overdrawn current
-float totalRotation[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // array of total angle rotated by each motor
 const float RELEASE_STEP = 20.0; // constant for how much the totalRotation will decrement each clock cycle during release
+const int NUM_MOTORS = 5;
 
 /* Testing Variable */
-bool DEBUG = true;
+bool DEBUG = false;
 
 /* Sampling Frequency */
 const int CLOCK_PERIOD = 500;   // 500 us (2kHz sampling frequency)
 
-/* Pair Definition */
-struct Pair {
-    bool success;
-    float data;
-
-    Pair(bool s, float d) : success(s), data(d) {}
-};
 
 void setup() {
     Serial.begin(9600);  // Start serial communication
@@ -47,79 +58,76 @@ void setup() {
 }
 
 void loop() {
-    float rawSignal = ReadInput(EMG_PIN);   // Read raw data from MyoWare EMG Sensor
-    if (DEBUG) {
-        Serial.print("Raw Signal = ");
-        Serial.print(rawSignal);
-        Serial.println(" V");
-    }
+  float rawSignal = ReadInput(EMG_PIN);   // Read raw data from MyoWare EMG Sensor
+  if (DEBUG) {
+      Serial.print("Raw Signal = ");
+      Serial.print(rawSignal);
+      Serial.println(" V");
+  }
 
-    float filteredSignal = Filter(rawSignal);   // Filter raw signal
-    if (DEBUG) {
-        Serial.print("Filtered Signal = ");
-        Serial.print(filteredSignal);
-        Serial.println(" V");
-    }
+  float filteredSignal = Filter(rawSignal);   // Filter raw signal
+  if (DEBUG) {
+      Serial.print("Filtered Signal = ");
+      Serial.print(filteredSignal);
+      Serial.println(" V");
+  }
 
-    float sensorReadings[5];
+  for (int i = 0; i < 5; i++)  {
+      MOTORS[i].sensorReadings = ReadInput(CURRENT_PINS[i]); // Read current sensor pins 
+      if (DEBUG) {
+          Serial.print("Sensor Reading for");
+          Serial.print(i + 1);
+          Serial.print(" = ");
+          Serial.print(MOTORS[i].sensorReadings);
+          Serial.println(" A");
+      }
+  }
 
-    for (int i = 0; i < 5; i++)  {
-        // sensorReadings[i] = (ReadInput(CURRENT_PINS[i]) - sensorVoltageOffset) / sensorSensitivity; // Read current sensor pins in Amperes
-        sensorReadings[i] = ReadInput(CURRENT_PINS[i]); // Read current sensor pins 
-        if (DEBUG) {
-            Serial.print("Sensor Reading for");
-            Serial.print(i + 1);
-            Serial.print(" = ");
-            Serial.print(sensorReadings[i]);
-            Serial.println(" A");
-        }
-    }
+  ControlMotors(filteredSignal);  // Control motors using filtered signal and current sensor readings
 
-    ControlMotors(filteredSignal, sensorReadings);  // Control motors using filtered signal and current sensor readings
-
-    delayMicroseconds(CLOCK_PERIOD); // 2kHz sampling frequency (500 us)
+  delayMicroseconds(CLOCK_PERIOD); // 2kHz sampling frequency (500 us)
 }
 
 float ReadInput(int pinNumber) {
-    /* 
-    - Function:
-        - Calls the private ***_TryReadInput*** method 
-        - Only returns a value if ***_TryReadInput*** was successful
-    - Arguments:
-        - pinNumber (int): the specific input pin that is read from
-    - Returns:
-        - float: digital value from pin
-    */
+  /* 
+  - Function:
+      - Calls the private ***_TryReadInput*** method 
+      - Only returns a value if ***_TryReadInput*** was successful
+  - Arguments:
+      - pinNumber (int): the specific input pin that is read from
+  - Returns:
+      - float: digital value from pin
+  */
 
-    Pair input = _TryReadInput(pinNumber);
-    if (!input.success) {
-        Serial.println("ERROR: Failure reading input at pin " + String(pinNumber));
-        return 0.0;
-    }
+  Pair input = _TryReadInput(pinNumber);
+  if (!input.success) {
+      Serial.println("ERROR: Failure reading input at pin " + String(pinNumber));
+      return 0.0;
+  }
 
-    return input.data;
+  return input.data;
 }
 
 Pair _TryReadInput(int pinNumber) {
-    /* 
-    - Function:
-        - Reads the analog input value at a specified pin
-    - Arguments:
-        - pinNumber(int): the specific pin that is read from
-    - Returns:
-        - bool: whether or not the read was sucessful
-        - float: the value read from the pin as a float
-    */
-   
-    Pair input(false, 0.0);
+  /* 
+  - Function:
+      - Reads the analog input value at a specified pin
+  - Arguments:
+      - pinNumber(int): the specific pin that is read from
+  - Returns:
+      - bool: whether or not the read was sucessful
+      - float: the value read from the pin as a float
+  */
+  
+  Pair input(false, 0.0);
 
-    // float value = (analogRead(pinNumber) / 1023.0) * 5.0; // Input value in Volts
-    float value = analogRead(pinNumber);
+  // float value = (analogRead(pinNumber) / 1023.0) * 5.0; // Input value in Volts
+  float value = analogRead(pinNumber);
 
-    input.success = true;  
-    input.data = value;
+  input.success = true;  
+  input.data = value;
 
-    return input;
+  return input;
 }
 
 float Filter(float data) {
@@ -169,85 +177,120 @@ Pair _TryFilter(float data) {
 
 }
 
-void ControlMotors(float filteredSignal, float sensorReadings[]) {
-    /*
+void ControlMotors(float filteredSignal) {
+  /*
+  - Function:
+      - Full control algorithm for motors
+  - Arguments:
+      - filteredSignal (float): Filtered EMG data
+  */ 
+
+  // Check that the EMG signal is powering the motors
+  if (filteredSignal > SIGNAL_THRESHOLD) {
+
+    // Iterate through each current sensor pin
+    for (int i = 0; i < NUM_MOTORS; i++) {
+      if (MOTORS[i].sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
+        MOTORS[i].state = HOLD; // Set motorState to HOLD
+      }
+      else {
+        MOTORS[i].state = TURN; // Set motorState to TURN
+      }
+      _UpdateState(MOTORS[i], filteredSignal);  // Update the state
+    }
+  }
+  else {
+    for (int i = 0; i < NUM_MOTORS; i++) {
+      MOTORS[i].state = RELEASE;  // Set the motor state to RELEASE 
+      _UpdateState(MOTORS[i], 0.0); // Update the motor states to RELEASE
+    }
+  }
+}
+
+void _UpdateState(motor& currMotor, float filteredSignal) {
+  /*
     - Function:
-        - Full control algorithm for motors
+      - Updates the state of a motor and sets its values accordingle
     - Arguments:
-        - filteredSignal (float): Filtered EMG data
-        - sensorReadings (floats): Current sensor readings
-    */
+      - currMotor (motor): motor struct of the current motor being iterated
+      - filteredSignal (float): EMG reading from MyoWare
+  */
 
+  if (currMotor.overdrawn > 0 && currMotor.overdrawn < 15) { // No matter the new state, keep HOLD state for 15 clock cycles
+    currMotor.state = HOLD;
+  }
 
-    // Check that the EMG signal is powering the motors
-    if (filteredSignal > SIGNAL_THRESHOLD) {
+  switch(currMotor.state) {
+    case (TURN):
+      _UpdateTurnState(currMotor, filteredSignal);
+      break;
+    case (HOLD):
+      _UpdateHoldState(currMotor, filteredSignal);
+      break;
+    case (RELEASE):
+      _UpdateReleaseState(currMotor, filteredSignal);
+      break;
+  }
+}
 
-        // Iterate through each current sensor pin
-        for (int i = 0; i < 5; i++) {
+void _UpdateTurnState(motor& currMotor, float filteredSignal) {
+  /*
+    - Function:
+      - Updates the currMotor to the TURN state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+  */
 
-            if (sensorReadings[i] > CURRENT_THRESHOLD) {    // If overdrawing current
+  // Set to turn state
+  currMotor.overdrawn = 0;  // Reset overdrawn counter
 
-                if (DEBUG) {
-                    Serial.print("Motor ");
-                    Serial.print(i + 1);
-                    Serial.println(" in hold state.");
-                }
+  float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a positive rotation
 
-                if (isOverdrawn[i]) {   // If it is consecutively overdrawn
-                    // Set to hold state
-                    MOTORS[i].write(90);
-                    continue;  // This should break out of line 133 loop, but remain in for-loop
-                }
+  currMotor.servo.write(rotation);  // Send rotation signal to the servo
 
-                isOverdrawn[i] = true;  // Record that this motor has overdrawn current
+  currMotor.totalRotation += rotation;  // Log that rotation (used for returning to original positon)
+}
 
-                // Continue rotating
-                float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
-                MOTORS[i].write(rotation);
-                totalRotation[i] += rotation;    
-            }
+void _UpdateReleaseState(motor& currMotor, float filteredSignal) {
+  /*
+    - Function:
+      - Updates the currMotor to the RELEASE state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+  */
 
-            else {
-                // Set to turn state
-                if (DEBUG) {
-                    Serial.print("Motor ");
-                    Serial.print(i + 1);
-                    Serial.println(" in turn state.");
-                }
+  currMotor.overdrawn = 0;  // Reset overdrawn counter
 
-                isOverdrawn[i] = false;
-                float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
-                MOTORS[i].write(rotation);
-                totalRotation[i] += rotation;    
-            }
-        }
+  // Check if the motor has moved at all yet
+  if (currMotor.totalRotation > 0) {  // If it has moved at all
+
+    currMotor.servo.write(80);  // slowly reverse motor
+
+    currMotor.totalRotation -= RELEASE_STEP;  // Decrement the totalRotation 
+
+    if (currMotor.totalRotation <= 0) { // once the motor has gotten to its return state
+      currMotor.totalRotation = 0;  // Reset totalRotation count
+      currMotor.servo.write(90);  // stop movement
     }
-    else {
-        // Release state
-        for (int i = 0; i < 5; i++) {
-            isOverdrawn[i] = false;
+  } 
+  else {
+    currMotor.servo.write(90);  // already at original position, stop
+  }
+}
 
-            // Set to release state
-            if (DEBUG) {
-                Serial.print("Motor ");
-                Serial.print(i + 1);
-                Serial.println(" in release state.");
-            }
+void _UpdateHoldState(motor& currMotor, float filteredSignal) {
+  /*
+    - Function:
+      - Updates the currMotor to the HOLD state
+    - Arguments:
+      - currMotor (motor): the current motor we are iterating through
+      - filteredSignal (float): the EMG signal from the MyoWare sensor
+  */
 
-            // Check if the motor has moved at all yet
-            if (totalRotation[i] > 0) {
-                MOTORS[i].write(80);  // slowly reverse motor
-                totalRotation[i] -= RELEASE_STEP;  // arbitrary value (requires testing)
+  // TODO: Need logic here to keep it stopped when stalled but not stop others
 
-                if (totalRotation[i] <= 0) { // once the motor has gotten to its return state
-                    totalRotation[i] = 0;
-                    MOTORS[i].write(90);  // stop movement
-                }
-            } 
-            else {
-                MOTORS[i].write(90);  // already at original position, stop
-            }
-        }
-    }
-
+  currMotor.overdrawn++;  // Increment overdrawn current
+  currMotor.servo.write(90);  // Write no movement to the motor
 }
