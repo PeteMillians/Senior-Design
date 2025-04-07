@@ -62,6 +62,7 @@ myServo.write(rotation speed between 0 and 90)
 - ***void _UpdateTurnState(motor& currMotor, float filteredSignal)***
     - Function:
       - Updates the currMotor to the TURN state
+      - Writes a rotation value between 90 and 180 based on filteredSignal level
     - Arguments:
       - currMotor (motor): the current motor we are iterating through
       - filteredSignal (float): the EMG signal from the MyoWare sensor
@@ -69,6 +70,7 @@ myServo.write(rotation speed between 0 and 90)
 - ***void _UpdateHoldState(motor& currMotor, float filteredSignal)***
     - Function:
       - Updates the currMotor to the HOLD state
+      - Writes a rotation of 90 to the servo, keeping it still
     - Arguments:
       - currMotor (motor): the current motor we are iterating through
       - filteredSignal (float): the EMG signal from the MyoWare sensor
@@ -76,6 +78,7 @@ myServo.write(rotation speed between 0 and 90)
 - ***void _UpdateReleaseState(motor& currMotor, float filteredSignal)***
     - Function:
       - Updates the currMotor to the RELEASE state
+      - Writes a rotation value of 80 to the motor while decrementing the totalRotation
     - Arguments:
       - currMotor (motor): the current motor we are iterating through
       - filteredSignal (float): the EMG signal from the MyoWare sensor
