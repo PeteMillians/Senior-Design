@@ -1,0 +1,330 @@
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.04
+Filtered Signal = 0.00
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.08
+Filtered Signal = 0.08
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.06
+Filtered Signal = 0.06
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.08
+Filtered Signal = 0.08
+
+Random Signal = 0.02
+Filtered Signal = 0.00
+
+Random Signal = 0.03
+Filtered Signal = 0.00
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.04
+Filtered Signal = 0.00
+
+Random Signal = 0.02
+Filtered Signal = 0.00
+
+Random Signal = 0.03
+Filtered Signal = 0.00
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.08
+Filtered Signal = 0.08
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.03
+Filtered Signal = 0.00
+
+Random Signal = 0.08
+Filtered Signal = 0.08
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.03
+Filtered Signal = 0.00
+
+Random Signal = 0.08
+Filtered Signal = 0.08
+
+Random Signal = 0.02
+Filtered Signal = 0.00
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.08
+Filtered Signal = 0.08
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.03
+Filtered Signal = 0.00
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.06
+Filtered Signal = 0.06
+
+Random Signal = 0.03
+Filtered Signal = 0.00
+
+Random Signal = 0.08
+Filtered Signal = 0.08
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.06
+Filtered Signal = 0.06
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.08
+Filtered Signal = 0.08
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.02
+Filtered Signal = 0.00
+
+Random Signal = 0.06
+Filtered Signal = 0.06
+
+Random Signal = 0.06
+Filtered Signal = 0.06
+
+Random Signal = 0.04
+Filtered Signal = 0.00
+
+Random Signal = 0.02
+Filtered Signal = 0.00
+
+Random Signal = 0.02
+Filtered Signal = 0.00
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.06
+Filtered Signal = 0.06
+
+Random Signal = 0.04
+Filtered Signal = 0.00
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.02
+Filtered Signal = 0.00
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.06
+Filtered Signal = 0.06
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.08
+Filtered Signal = 0.08
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.04
+Filtered Signal = 0.00
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.03
+Filtered Signal = 0.00
+
+Random Signal = 0.04
+Filtered Signal = 0.00
+
+Random Signal = 0.01
+Filtered Signal = 0.00
+
+Random Signal = 0.04
+Filtered Signal = 0.00
+
+Random Signal = 0.02
+Filtered Signal = 0.00
+
+Random Signal = 0.03
+Filtered Signal = 0.00
+
+Random Signal = 0.03
+Filtered Signal = 0.00
+
+Random Signal = 0.06
+Filtered Signal = 0.06
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.08
+Filtered Signal = 0.08
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.06
+Filtered Signal = 0.06
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.07
+Filtered Signal = 0.07
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.05
+Filtered Signal = 0.05
+
+Random Signal = 0.04
+Filtered Signal = 0.00
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
+Random Signal = 0.04
+Filtered Signal = 0.00
+
+Random Signal = 0.00
+Filtered Signal = 0.00
+
+Random Signal = 0.09
+Filtered Signal = 0.09
+
