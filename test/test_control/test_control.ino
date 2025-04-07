@@ -11,7 +11,7 @@ struct motor {
   bool overdrawn = false;
   float totalRotation = 0.0;
   MotorState state = RELEASE;
-  float sensorReadings = 0.0;
+  float sensorReading = 0.0;
 };
 
 /* Constants declared in header */
@@ -49,7 +49,7 @@ void loop() {
   float currentReadings[5];
   
   for (int i = 0; i < 5; i++) {
-    MOTORS[i].currentReading = float(analogRead(CURRENT_PINS[i]));
+    MOTORS[i].sensorReading = float(analogRead(CURRENT_PINS[i]));
     Serial.print(currentReadings[i] + String(" "));
   }
   Serial.println();
@@ -75,9 +75,9 @@ void ControlMotors(float filteredSignal) {
     // Iterate through each current sensor pin
     for (int i = 0; i < sizeof(MOTORS) - 1; i++) {
       float currentThreshold = _getCurrentThreshold(); // Get current threshold of current motor states
-      currMotor = MOTORS[i];
+      motor currMotor = MOTORS[i];
 
-      if (currMotor.sensorReadings < currentThreshold) {
+      if (currMotor.sensorReading < currentThreshold) {
         currMotor.state = HOLD;
       }
       else {
@@ -109,7 +109,7 @@ switch(currMotor.state) {
     currMotor.overdrawn = false;
     float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 205, 90, 180), 90, 180);    // Map signal to a rotation speed
     currMotor.servo.write(rotation);
-    currMotor.rotation += rotation;    
+    currMotor.totalRotation += rotation;    
     break;
   case (HOLD):
     // int stallIndex = _getStallIndex(currMotor.sensorReading, currentThreshold);
