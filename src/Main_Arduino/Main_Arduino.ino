@@ -184,13 +184,13 @@ void ControlMotors(float filteredSignal) {
 
     // Iterate through each current sensor pin
     for (int i = 0; i < NUM_MOTORS; i++) {
-      if (MOTORS[i].sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
-        MOTORS[i].state = HOLD; // Set motorState to HOLD
-        Serial.println("Motor " + String(i + 1) + " set to HOLD");
-      }
-      else {
+      // if (MOTORS[i].sensorReading < CURRENT_THRESHOLD) { // Check if that motor's current reading is less than the current threshold
+      //   MOTORS[i].state = HOLD; // Set motorState to HOLD
+      //   Serial.println("Motor " + String(i + 1) + " set to HOLD");
+      // }
+      // else {
         MOTORS[i].state = TURN; // Set motorState to TURN
-      }
+      // }
       _UpdateState(MOTORS[i], filteredSignal);  // Update the state
     }
   }
@@ -220,7 +220,7 @@ void _UpdateState(motor& currMotor, float filteredSignal) {
       _UpdateTurnState(currMotor, filteredSignal);
       break;
     case (HOLD):
-      _UpdateHoldState(currMotor, filteredSignal);
+      // _UpdateHoldState(currMotor, filteredSignal);
       break;
     case (RELEASE):
       _UpdateReleaseState(currMotor, filteredSignal);
@@ -240,7 +240,7 @@ void _UpdateTurnState(motor& currMotor, float filteredSignal) {
   // Set to turn state
   currMotor.overdrawn = 0;  // Reset overdrawn counter
 
-  float rotation = constrain(map(filteredSignal, SIGNAL_THRESHOLD, 40, 91, 120), 91, 120);    // Map signal to a positive rotation
+  float rotation = 89 - constrain(map(filteredSignal, SIGNAL_THRESHOLD, 40, 60, 89), 60, 89) + 60;    // Map signal to a positive rotation
 
   currMotor.servo.write(rotation);  // Send rotation signal to the servo
 
@@ -261,7 +261,7 @@ void _UpdateReleaseState(motor& currMotor, float filteredSignal) {
   // Check if the motor has moved at all yet
   if (currMotor.totalRotation > 0) {  // If it has moved at all
 
-    currMotor.servo.write(80);  // slowly reverse motor
+    currMotor.servo.write(110);  // slowly reverse motor
 
     currMotor.totalRotation -= RELEASE_STEP;  // Decrement the totalRotation 
 
