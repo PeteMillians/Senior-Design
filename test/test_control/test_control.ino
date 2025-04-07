@@ -50,7 +50,7 @@ void loop() {
   
   for (int i = 0; i < 5; i++) {
     MOTORS[i].sensorReading = float(analogRead(CURRENT_PINS[i]));
-    Serial.print(currentReadings[i] + String(" "));
+    Serial.print(MOTORS[i].sensorReading + String(" "));
   }
   Serial.println();
 
