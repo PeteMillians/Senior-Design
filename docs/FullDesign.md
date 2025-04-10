@@ -144,6 +144,6 @@ graph TD
         B2[Current Sensor]
     end
     
-    A -- "EMG Data" --> C1 --> C2 -- "Digital EMG Signal" --> C3 -- "Filtered EMG Data" --> C4 --> C5 -- "Digital Control Signal" --> B1 -- "DC Current" --> B2 -- "Current Reading" --> C1
+    A -- "EMG Data" --> C1 --> C2 -- "Digital Signals" --> C3 -- "Filtered EMG Data and Current Readings" --> C4 --> C5 -- "Digital Control Signal" --> B1 -- "DC Current" --> B2 -- "Current Reading" --> C1
   end
 ```
